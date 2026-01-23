@@ -1,2 +1,2 @@
-export * from "./my-lib.module";
-export * from "./my-lib.service";
+export * from "./telegram.module";
+export * from "./telegram.service";
