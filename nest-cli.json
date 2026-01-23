@@ -8,9 +8,31 @@
       "compilerOptions": {
         "tsConfigPath": "libs/my-lib/tsconfig.lib.json"
       }
+    },
+    "nest-teleforge": {
+      "type": "application",
+      "root": "apps/nest-teleforge",
+      "entryFile": "main",
+      "sourceRoot": "apps/nest-teleforge/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/nest-teleforge/tsconfig.app.json"
+      }
+    },
+    "playground": {
+      "type": "application",
+      "root": "apps/playground",
+      "entryFile": "main",
+      "sourceRoot": "apps/playground/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/playground/tsconfig.app.json"
+      }
     }
   },
   "compilerOptions": {
-    "webpack": true
-  }
+    "webpack": true,
+    "tsConfigPath": "apps/nest-teleforge/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/nest-teleforge",
+  "sourceRoot": "apps/nest-teleforge/src"
 }
