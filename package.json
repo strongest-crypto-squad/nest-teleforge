@@ -14,9 +14,11 @@
   "devDependencies": {
     "@nestjs/cli": "11.0.16",
     "@nestjs/common": "11.1.12",
+    "@nestjs/config": "^4.0.2",
     "@nestjs/core": "11.1.12",
     "@nestjs/platform-express": "11.1.12",
     "class-validator": "0.14.3",
+    "reflect-metadata": "^0.2.2",
     "telegraf": "4.16.3",
     "ts-loader": "9.5.4",
     "webpack": "5.104.1",
