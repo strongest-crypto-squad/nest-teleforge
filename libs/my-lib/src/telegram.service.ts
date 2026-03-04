@@ -4,7 +4,7 @@ import { AsyncLocalStorage } from "async_hooks";
 import { message } from "telegraf/filters";
 import { TgFormContext, tgForm } from "libs/my-lib/src/features/form/tgForm";
 import { WaitManager } from "libs/my-lib/src/wait-manager";
-import { TELEGRAM_KEY } from "libs/my-lib/src/telegram.module";
+import { TELEGRAM_KEY } from "libs/my-lib/src/telegram.constant";
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
@@ -25,6 +25,8 @@ export class TelegramService implements OnModuleInit {
       const chatId = ctx.chat?.id;
       const text = ctx.message?.text ?? "";
       if (chatId == null) return;
+
+      console.log(chatId, text);
 
       if (text.startsWith("/cancel")) {
         const canceled = this.wait.cancel(chatId, "User canceled");

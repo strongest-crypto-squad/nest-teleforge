@@ -12,6 +12,7 @@ import { EXAMPLE_SCHEMA } from "./schemas/example";
 import { TelegramController } from "./telegram.controller.tg";
 import { TelegramService } from "./telegram.service";
 import { WaitManager } from "./wait-manager";
+import { TELEGRAM_KEY } from "libs/my-lib/src/telegram.constant";
 
 function createTelegramProviders(telegramKeyProvider: Provider): Provider[] {
   return [
@@ -63,8 +64,6 @@ export class TelegramModule {
     });
   }
 }
-
-export const TELEGRAM_KEY = "TELEGRAM_KEY";
 
 export interface TelegramModuleAsyncOptions {
   imports?: any[];
