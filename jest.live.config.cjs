@@ -2,9 +2,8 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/libs', '<rootDir>/apps'],
-  testMatch: ['**/*.spec.ts'],
-  testPathIgnorePatterns: ['\\.live\\.spec\\.ts$'],
+  roots: ['<rootDir>/apps', '<rootDir>/libs'],
+  testMatch: ['**/*.live.spec.ts'],
   moduleDirectories: ['node_modules', '<rootDir>'],
   clearMocks: true,
 };
