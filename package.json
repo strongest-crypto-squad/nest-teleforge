@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nest start playground --debug --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [],
   "author": "",
@@ -17,10 +19,14 @@
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "11.1.12",
     "@nestjs/platform-express": "11.1.12",
+    "@types/jest": "^30.0.0",
     "class-validator": "0.14.3",
+    "jest": "^30.2.0",
     "reflect-metadata": "^0.2.2",
     "telegraf": "4.16.3",
+    "ts-jest": "^29.4.6",
     "ts-loader": "9.5.4",
+    "typescript": "^5.9.3",
     "webpack": "5.104.1",
     "webpack-cli": "6.0.1"
   }
