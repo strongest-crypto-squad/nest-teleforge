@@ -13,7 +13,6 @@ export class WaitManager {
     if (prev) {
       clearTimeout(prev.timeoutId);
       prev.reject(new Error('Replaced by new waiter'));
-      console.log('delete');
       this.pending.delete(chatId);
     }
 

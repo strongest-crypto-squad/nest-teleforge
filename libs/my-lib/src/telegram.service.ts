@@ -26,8 +26,6 @@ export class TelegramService implements OnModuleInit {
       const text = ctx.message?.text ?? "";
       if (chatId == null) return;
 
-      console.log(chatId, text);
-
       if (text.startsWith("/cancel")) {
         const canceled = this.wait.cancel(chatId, "User canceled");
         if (canceled) {
@@ -44,7 +42,31 @@ export class TelegramService implements OnModuleInit {
       return next();
     });
 
-    // @TODO: подумать есть ли тут вообще какая то польза
+    this.bot.on("callback_query", async (ctx, next) => {
+      const chatId = ctx.chat?.id;
+      const data = (ctx.update as any)?.callback_query?.data as
+        | string
+        | undefined;
+
+      if (chatId == null || !data) {
+        return next();
+      }
+
+      if (!this.wait.has(chatId)) {
+        return next();
+      }
+
+      const consumed = this.wait.consume(chatId, data);
+      if (consumed) {
+        try {
+          await ctx.answerCbQuery();
+        } catch {}
+        return;
+      }
+
+      return next();
+    });
+
     await this.bot.telegram.deleteWebhook({ drop_pending_updates: true });
     this.bot.launch();
     this.logger.log("Telegram bot launched");

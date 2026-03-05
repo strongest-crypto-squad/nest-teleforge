@@ -85,7 +85,10 @@ export class ListAnswerService {
       // pagination
       if (text === "page_prev") {
         page = Math.max(0, page - 1);
-        await ctx.editMessageReplyMarkup(
+        await ctx.telegram.editMessageReplyMarkup(
+          chatId,
+          sent.message_id,
+          undefined,
           this.buildKeyboard(items, page, totalPages, cancel).reply_markup,
         );
         continue;
@@ -93,7 +96,10 @@ export class ListAnswerService {
 
       if (text === "page_next") {
         page = Math.min(totalPages - 1, page + 1);
-        await ctx.editMessageReplyMarkup(
+        await ctx.telegram.editMessageReplyMarkup(
+          chatId,
+          sent.message_id,
+          undefined,
           this.buildKeyboard(items, page, totalPages, cancel).reply_markup,
         );
         continue;
