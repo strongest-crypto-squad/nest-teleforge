@@ -12,11 +12,9 @@ export class MenuRenderer {
     p: Predicate | Predicate[] | undefined,
     ctx: TgCtx,
   ): Promise<boolean> {
-    console.log('p', p, typeof p);
     if (!p) return true;
     const arr = Array.isArray(p) ? p : [p];
     for (const fn of arr) {
-      console.log('fn', fn, typeof fn);
       const ok = await Promise.resolve(fn(ctx));
       if (!ok) return false;
     }
@@ -35,7 +33,6 @@ export class MenuRenderer {
     for (const ck of children) {
       const ch = this.registry.getNodeByKey(ck)!;
       if (ch.hidden) continue;
-      console.log(ch);
       const allowed = await this.evalPred(ch.guard, mctx);
       if (allowed) visible.push(ck);
     }

@@ -62,7 +62,13 @@ export class TelegramController {
       getKey: ({ key }) => key,
     });
 
-    console.log(res);
+    await ctx.reply(
+      res.type === "selected"
+        ? `Выбран вариант: ${res.item.key}`
+        : res.type === "timeout"
+          ? "Время выбора истекло."
+          : "Выбор отменён.",
+    );
 
     return "handled";
   }
