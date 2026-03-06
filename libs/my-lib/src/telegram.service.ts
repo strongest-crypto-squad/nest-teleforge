@@ -2,6 +2,8 @@ import { Injectable, OnModuleInit, Logger, Inject } from "@nestjs/common";
 import { Telegraf, Context } from "telegraf";
 import { AsyncLocalStorage } from "async_hooks";
 import { message } from "telegraf/filters";
+import { appendFile, mkdir } from "fs/promises";
+import { dirname } from "path";
 import { TgFormContext, tgForm } from "libs/my-lib/src/features/form/tgForm";
 import { WaitManager } from "libs/my-lib/src/wait-manager";
 import { TELEGRAM_KEY } from "libs/my-lib/src/telegram.constant";
@@ -11,6 +13,11 @@ export class TelegramService implements OnModuleInit {
   public bot!: Telegraf<Context>;
   private readonly logger = new Logger(TelegramService.name);
   private readonly chatStorage = new AsyncLocalStorage<number>();
+  private readonly debugUpdatesEnabled = process.env.TG_DEBUG_UPDATES === "1";
+  private readonly debugUpdatesToFile =
+    process.env.TG_DEBUG_UPDATES_FILE === "1";
+  private readonly updatesLogFilePath =
+    process.env.TG_DEBUG_UPDATES_LOG_PATH ?? "logs/telegram-updates.log";
 
   constructor(
     @Inject(TELEGRAM_KEY)
@@ -19,7 +26,49 @@ export class TelegramService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    this.bot = new Telegraf(this.telegramKey);
+    this.bot = new Telegraf(this.telegramKey, {
+      telegram: {
+        
+      }
+    });
+
+    if (this.debugUpdatesEnabled) {
+      this.bot.use(async (ctx, next) => {
+        const updateType = ctx.updateType;
+        const chatId = ctx.chat?.id;
+        const fromId = ctx.from?.id;
+        const text = (ctx.message as any)?.text;
+        const callbackData = (ctx.update as any)?.callback_query?.data;
+
+        const parts = [
+          `type=${updateType}`,
+          `chatId=${chatId ?? "-"}`,
+          `fromId=${fromId ?? "-"}`,
+        ];
+
+        if (typeof text === "string") {
+          parts.push(`text=${JSON.stringify(text.slice(0, 200))}`);
+        }
+
+        if (typeof callbackData === "string") {
+          parts.push(`callback=${JSON.stringify(callbackData.slice(0, 200))}`);
+        }
+
+        const line = `[tg:update] ${parts.join(" ")}`;
+        this.logger.log(line);
+
+        if (this.debugUpdatesToFile) {
+          try {
+            await mkdir(dirname(this.updatesLogFilePath), { recursive: true });
+            await appendFile(this.updatesLogFilePath, `${new Date().toISOString()} ${line}\n`);
+          } catch (err) {
+            this.logger.warn(`Failed to write Telegram update log file: ${err}`);
+          }
+        }
+
+        return next();
+      });
+    }
 
     this.bot.on(message("text"), async (ctx, next) => {
       const chatId = ctx.chat?.id;
