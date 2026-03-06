@@ -28,18 +28,17 @@ async function main() {
 
   const targetToken = process.env.TELEGRAM_KEY;
   const chatIdRaw = process.env.TG_TEST_CHAT_ID;
-  const senderModeRaw = (process.env.TG_LIVE_SENDER || 'bot').trim();
-  const senderMode = senderModeRaw === 'user' ? 'user' : 'bot';
-
-  const testerToken = process.env.TG_TESTER_BOT_TOKEN;
   const userApiIdRaw = process.env.TG_USER_API_ID;
   const userApiHash = process.env.TG_USER_API_HASH;
   const userSession = process.env.TG_USER_SESSION;
 
-  const commonEnv = ['TELEGRAM_KEY', 'TG_TEST_CHAT_ID'];
-  const botEnv = ['TG_TESTER_BOT_TOKEN'];
-  const userEnv = ['TG_USER_API_ID', 'TG_USER_API_HASH', 'TG_USER_SESSION'];
-  requireEnv(senderMode === 'bot' ? [...commonEnv, ...botEnv] : [...commonEnv, ...userEnv]);
+  requireEnv([
+    'TELEGRAM_KEY',
+    'TG_TEST_CHAT_ID',
+    'TG_USER_API_ID',
+    'TG_USER_API_HASH',
+    'TG_USER_SESSION',
+  ]);
 
   const chatId = Number(chatIdRaw);
   if (!Number.isFinite(chatId)) {
@@ -47,7 +46,7 @@ async function main() {
   }
 
   const userApiId = userApiIdRaw ? Number(userApiIdRaw) : NaN;
-  if (senderMode === 'user' && !Number.isFinite(userApiId)) {
+  if (!Number.isFinite(userApiId)) {
     throw new Error('TG_USER_API_ID must be numeric');
   }
 
@@ -63,33 +62,23 @@ async function main() {
   let messageId = '(user-mode: no bot message id)';
   let destination = `chat_id=${chatId}`;
 
-  if (senderMode === 'bot') {
-    const sent = await callBotApi(testerToken, 'sendMessage', {
-      chat_id: chatId,
-      text,
-    });
-    messageId = String(sent.message_id);
-    destination = `bot-api chat_id=${chatId}`;
-  } else {
-    const client = createUserClient({
-      apiId: userApiId,
-      apiHash: userApiHash,
-      session: userSession,
-    });
-    await client.connect();
-    try {
-      const target = await resolveTargetDialogByPeerId(client, chatId);
-
-      const sent = await client.sendMessage(target.entity, { message: text });
-      messageId = String(sent.id ?? messageId);
-      destination = `dialog=${target.name || 'unknown'} peerId=${Number(utils.getPeerId(target.entity))}`;
-    } finally {
-      await client.disconnect();
-    }
+  const client = createUserClient({
+    apiId: userApiId,
+    apiHash: userApiHash,
+    session: userSession,
+  });
+  await client.connect();
+  try {
+    const target = await resolveTargetDialogByPeerId(client, chatId);
+    const sent = await client.sendMessage(target.entity, { message: text });
+    messageId = String(sent.id ?? messageId);
+    destination = `dialog=${target.name || 'unknown'} peerId=${Number(utils.getPeerId(target.entity))}`;
+  } finally {
+    await client.disconnect();
   }
 
   console.log('Sent command:', text);
-  console.log('Sender mode:', senderMode);
+  console.log('Sender mode: user');
   console.log('Destination:', destination);
   console.log('Message id:', messageId);
 }

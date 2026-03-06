@@ -9,11 +9,9 @@ export type TgUser = {
 export type LiveEnv = {
   targetToken: string;
   chatId: number;
-  senderMode: 'bot' | 'user';
-  testerToken?: string;
-  userApiId?: number;
-  userApiHash?: string;
-  userSession?: string;
+  userApiId: number;
+  userApiHash: string;
+  userSession: string;
 };
 
 export type LiveBotHarness = {
