@@ -1,4 +1,4 @@
-# @your-scope/my-lib
+# nest-teleforge
 
 NestJS toolkit for Telegram bots built on Telegraf:
 
@@ -10,7 +10,7 @@ NestJS toolkit for Telegram bots built on Telegraf:
 ## Install
 
 ```bash
-pnpm add @your-scope/my-lib telegraf reflect-metadata class-validator
+pnpm add nest-teleforge telegraf reflect-metadata class-validator
 pnpm add @nestjs/common @nestjs/core
 ```
 
@@ -18,7 +18,7 @@ pnpm add @nestjs/common @nestjs/core
 
 ```ts
 import { Module } from "@nestjs/common";
-import { TelegramModule } from "@your-scope/my-lib";
+import { TelegramModule } from "nest-teleforge";
 
 @Module({
   imports: [TelegramModule.forRoot(process.env.TELEGRAM_KEY!)],
@@ -31,7 +31,7 @@ export class AppModule {}
 ```ts
 import { Injectable } from "@nestjs/common";
 import { Context } from "telegraf";
-import { TgCommand, MenuAction, MenuService } from "@your-scope/my-lib";
+import { TgCommand, MenuAction, MenuService } from "nest-teleforge";
 
 @Injectable()
 export class BotController {
