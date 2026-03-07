@@ -6,10 +6,10 @@ export enum Size {
   Large = "large",
 }
 export class OrderDto {
-  @Prompt("Какой товар хотите заказать?") @IsString() product: string = "";
-  @Prompt("Сколько штук? (число ≥ 1)") @IsInt() @Min(1) quantity: number = 1;
-  @Prompt("Выберите размер (small/medium/large)") @IsEnum(Size) size: Size =
+  @Prompt("What product would you like to order?") @IsString() product: string = "";
+  @Prompt("How many units? (number ≥ 1)") @IsInt() @Min(1) quantity: number = 1;
+  @Prompt("Choose size (small/medium/large)") @IsEnum(Size) size: Size =
     Size.Medium;
-  @Prompt("Когда доставить? (YYYY-MM-DD)") @IsDate() deliveryDate: Date =
+  @Prompt("When should we deliver? (YYYY-MM-DD)") @IsDate() deliveryDate: Date =
     new Date();
 }

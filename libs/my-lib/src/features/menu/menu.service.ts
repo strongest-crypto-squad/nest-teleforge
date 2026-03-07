@@ -144,7 +144,7 @@ export class MenuService {
 
     const payload = this.parseCallback(data);
     if (!payload) {
-      await this.safeAnswerCbQuery(ctx, 'Некорректная кнопка меню');
+      await this.safeAnswerCbQuery(ctx, 'Invalid menu button');
       return true;
     }
 
@@ -157,13 +157,13 @@ export class MenuService {
     const states = this.statesByChat.get(chatId) ?? [];
     const state = states[states.length - 1];
     if (!state || state.flowId !== payload.flowId) {
-      await this.safeAnswerCbQuery(ctx, 'Меню недоступно');
+      await this.safeAnswerCbQuery(ctx, 'Menu is unavailable');
       return true;
     }
 
     const actionId = state.callbackLookup.get(payload.token);
     if (!actionId) {
-      await this.safeAnswerCbQuery(ctx, 'Кнопка устарела');
+      await this.safeAnswerCbQuery(ctx, 'Button is outdated');
       return true;
     }
 
@@ -177,7 +177,7 @@ export class MenuService {
     const key = this.buildKey(payload.flowId, actionId);
     const action = this.actionsByKey.get(key);
     if (!action) {
-      await this.safeAnswerCbQuery(ctx, 'Действие не найдено');
+      await this.safeAnswerCbQuery(ctx, 'Action not found');
       return true;
     }
 
@@ -185,13 +185,13 @@ export class MenuService {
 
     const allowed = await this.evalPred(action.options.guard, mctx);
     if (!allowed) {
-      await this.safeAnswerCbQuery(ctx, 'Недоступно');
+      await this.safeAnswerCbQuery(ctx, 'Unavailable');
       return true;
     }
 
     const enabled = await this.evalEnabled(action.options.disabled, mctx);
     if (!enabled) {
-      await this.safeAnswerCbQuery(ctx, action.options.disabledText || 'Недоступно');
+      await this.safeAnswerCbQuery(ctx, action.options.disabledText || 'Unavailable');
       return true;
     }
 
@@ -295,7 +295,7 @@ export class MenuService {
 
       rows.push([
         {
-          text: '⬅️ Назад',
+          text: '⬅️ Back',
           callback_data: this.packCallback({ flowId: state.flowId, token: backToken }),
         },
       ]);

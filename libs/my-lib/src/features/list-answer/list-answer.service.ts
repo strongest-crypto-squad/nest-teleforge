@@ -24,8 +24,8 @@ export class ListAnswerService {
       getKey,
       predicate,
       disabledStrategy = "disable",
-      disabledLabelSuffix = " (недоступно)",
-      message = "Выберите вариант:",
+      disabledLabelSuffix = " (unavailable)",
+      message = "Choose an option:",
       cancel,
       timeoutMs = 60_000,
       onBeforeShow,
@@ -35,7 +35,7 @@ export class ListAnswerService {
     const chatId = ctx.chat!.id;
     const predicates = normalizePredicates(predicate);
 
-    // 1️⃣ Подготовка items
+    // 1️⃣ Prepare items
     const items: PageItem<T>[] = [];
 
     for (const item of list) {
@@ -58,7 +58,7 @@ export class ListAnswerService {
     let page = 0;
     const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
 
-    // 2️⃣ Отправляем сообщение
+    // 2️⃣ Send message
     const sent = await ctx.reply(
       message,
       this.buildKeyboard(items, page, totalPages, cancel),
@@ -109,7 +109,7 @@ export class ListAnswerService {
       const selected = items.find((i) => i.key === text);
 
       if (!selected || !selected.enabled) {
-        // invalid → просто игнорируем
+        // invalid -> ignore
         continue;
       }
 
@@ -158,7 +158,7 @@ export class ListAnswerService {
     if (cancel) {
       rows.push([
         Markup.button.callback(
-          cancel.label ?? "Отмена",
+          cancel.label ?? "Cancel",
           cancel.value ?? "cancel",
         ),
       ]);

@@ -78,7 +78,7 @@ export class TelegramService implements OnModuleInit {
       if (text.startsWith("/cancel")) {
         const canceled = this.wait.cancel(chatId, "User canceled");
         if (canceled) {
-          await ctx.reply("Окей, отменил форму.");
+          await ctx.reply("Okay, form cancelled.");
         }
         return;
       }
@@ -144,15 +144,15 @@ export class TelegramService implements OnModuleInit {
     const chatId = this.getCurrentChatId();
     if (chatId == null) {
       throw new Error(
-        "telegramService.form() должен вызываться внутри обработчика команды Telegram. " +
-          "Либо передайте контекст через TelegramExplorer.runWithChat().",
+        "telegramService.form() must be called inside a Telegram command handler. " +
+          "Alternatively, pass context via TelegramExplorer.runWithChat().",
       );
     }
 
     const timeoutMs = opts?.timeoutMs ?? 60_000;
     const cancelCommand = opts?.cancelCommand ?? "/cancel";
     const promptSuffix =
-      opts?.promptSuffix ?? `(Напишите текст или ${cancelCommand})`;
+      opts?.promptSuffix ?? `(Send text or ${cancelCommand})`;
 
     const formCtx: TgFormContext = {
       reply: async (text: string) => {
@@ -166,7 +166,7 @@ export class TelegramService implements OnModuleInit {
           try {
             await this.bot.telegram.sendMessage(
               chatId,
-              "Время ожидания истекло. Начни заново или напиши /cancel.",
+              "Waiting time expired. Start again or send /cancel.",
             );
           } catch {}
         });

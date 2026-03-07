@@ -11,8 +11,8 @@ export class PlaygroundProfileHandlers {
   constructor(private readonly menuService: MenuService) {}
 
   @MenuAction("main", "home", {
-    label: "🏠 Домой",
-    description: "Домашний экран.",
+    label: "🏠 Home",
+    description: "Home screen.",
     order: 10,
   })
   async onHome(): Promise<MenuActionResult> {
@@ -20,8 +20,8 @@ export class PlaygroundProfileHandlers {
   }
 
   @MenuAction("main", "home.profile", {
-    label: "👤 Профиль",
-    description: "Ваши данные и настройки профиля.",
+    label: "👤 Profile",
+    description: "Your profile data and settings.",
     order: 10,
     parentFunction: PlaygroundProfileHandlers.prototype.onHome,
   })
@@ -30,15 +30,15 @@ export class PlaygroundProfileHandlers {
   }
 
   @MenuAction("main", "home.profile.view", {
-    label: "Посмотреть профиль",
-    description: "Здесь будут ваши данные.",
+    label: "View profile",
+    description: "Your profile details appear here.",
     order: 10,
     parentFunction: PlaygroundProfileHandlers.prototype.onProfile,
   })
   async onProfileView(ctx: Context): Promise<MenuActionResult> {
     await this.menuService.start(ctx, {
       flowId: "profile",
-      text: "Профиль: выберите действие",
+      text: "Profile: choose an action",
       mode: "push",
       columns: 1,
     });
@@ -46,8 +46,8 @@ export class PlaygroundProfileHandlers {
   }
 
   @MenuAction("profile", "info", {
-    label: "📄 Инфо",
-    description: "👤 Профиль\n(кастомный контент из @MenuAction)",
+    label: "📄 Info",
+    description: "👤 Profile\n(custom content from @MenuAction)",
     order: 10,
   })
   async onProfileInfo(): Promise<MenuActionResult> {
@@ -55,8 +55,8 @@ export class PlaygroundProfileHandlers {
   }
 
   @MenuAction("profile", "back-to-main", {
-    label: "⬅️ В главное меню",
-    description: "Возврат в основное меню",
+    label: "⬅️ Back to main menu",
+    description: "Return to main menu",
     order: 20,
   })
   async onBackToMain(ctx: Context): Promise<MenuActionResult> {
@@ -65,8 +65,8 @@ export class PlaygroundProfileHandlers {
   }
 
   @MenuAction("main", "home.settings", {
-    label: "⚙️ Настройки",
-    description: "Общие параметры аккаунта.",
+    label: "⚙️ Settings",
+    description: "General account settings.",
     order: 20,
     parentFunction: PlaygroundProfileHandlers.prototype.onHome,
   })
@@ -75,8 +75,8 @@ export class PlaygroundProfileHandlers {
   }
 
   @MenuAction("main", "home.settings.notifications", {
-    label: "Уведомления",
-    description: "Включить/выключить уведомления.",
+    label: "Notifications",
+    description: "Enable or disable notifications.",
     order: 10,
     parentFunction: PlaygroundProfileHandlers.prototype.onSettings,
   })

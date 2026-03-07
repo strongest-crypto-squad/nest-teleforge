@@ -6,13 +6,13 @@
 pnpm test
 ```
 
-Запуск конкретного файла:
+Run a specific file:
 
 ```bash
 pnpm test:file -- apps/playground/src/telegram.menu.live.spec.ts
 ```
 
-Запуск конкретного `it`/`test` по имени:
+Run a specific `it`/`test` by name:
 
 ```bash
 pnpm test:case -- "navigates menu and handles inline button clicks"
@@ -20,80 +20,80 @@ pnpm test:case -- "navigates menu and handles inline button clicks"
 
 ### Live Telegram integration test (real Bot API)
 
-Тест запускает реальный Nest-бот и проверяет `/help` в реальном чате через Telegram Bot API.
+This test starts a real Nest bot and verifies `/help` in a real chat via Telegram Bot API.
 
 ```bash
 pnpm test:live
 ```
 
-Запуск конкретного live-файла:
+Run a specific live file:
 
 ```bash
 pnpm test:live:file -- apps/playground/src/telegram.menu.live.spec.ts
 ```
 
-Запуск конкретного live-теста по имени:
+Run a specific live test by name:
 
 ```bash
 pnpm test:live:case -- "navigates menu and handles inline button clicks"
 ```
 
-Нужны переменные окружения:
+Required environment variables:
 
-- `TELEGRAM_KEY` — токен тестируемого бота (target)
-- `TG_TEST_CHAT_ID` — chat id общего тестового чата (обычно группа, например `-100...`)
+- `TELEGRAM_KEY` — target bot token
+- `TG_TEST_CHAT_ID` — test chat id (usually a group, e.g. `-100...`)
 - `TG_USER_API_ID`
 - `TG_USER_API_HASH`
 - `TG_USER_SESSION` (StringSession)
-- `TG_FORM_TIMEOUT_MS` (опционально) — timeout формы в мс, по умолчанию `60000`.
+- `TG_FORM_TIMEOUT_MS` (optional) — form timeout in ms, default `60000`.
 
-Сгенерировать `TG_USER_SESSION` можно программно:
+You can generate `TG_USER_SESSION` programmatically:
 
 ```bash
 pnpm tg:gen-session
 ```
 
-По умолчанию скрипт запускает QR-логин (покажет QR в терминале). Если нужен старый режим по коду:
+By default the script starts QR login (prints QR in terminal). If you need the legacy code mode:
 
 ```bash
 pnpm tg:gen-session -- --sms
 ```
 
-После авторизации скрипт выведет строку для `.env`.
+After authorization, the script prints a line for `.env`.
 
-Рекомендуемые условия:
+Recommended setup:
 
-- user-аккаунт с `TG_USER_SESSION` должен состоять в тестовом чате;
-- запускать только на отдельном тестовом чате.
+- the user account from `TG_USER_SESSION` should be a member of the test chat;
+- run tests only in a dedicated test chat.
 
-Если env-переменные не заданы, live suite автоматически пропускается.
+If env variables are not set, the live suite is skipped automatically.
 
 ### Form e2e corner cases
 
-В live e2e покрываются сценарии формы `/order`:
+Live e2e covers `/order` form scenarios:
 
-- Happy path: успешное заполнение всех полей и финальный `✅ Заказ принят`.
-- Validation retry: невалидные `quantity` и `deliveryDate` возвращают `Ошибка:` и повторяют текущий prompt.
-- Timeout path: при коротком `TG_FORM_TIMEOUT_MS` бот отправляет сообщение об истечении времени.
+- Happy path: all fields are completed successfully and final `✅ Order accepted` is returned.
+- Validation retry: invalid `quantity` and `deliveryDate` return `Error:` and repeat current prompt.
+- Timeout path: with a short `TG_FORM_TIMEOUT_MS`, bot sends timeout message.
 
-Рекомендовано для e2e: `TG_FORM_TIMEOUT_MS=10000`, чтобы не ждать 60 секунд.
+Recommended for e2e: `TG_FORM_TIMEOUT_MS=10000` to avoid waiting 60 seconds.
 
 ### List e2e
 
-В live e2e покрыт сценарий `/list`:
+Live e2e includes `/list` scenario:
 
-- бот показывает список inline-кнопок;
-- тест нажимает реальную кнопку `kek2`;
-- проверяется итоговый ответ `Выбран вариант: key2`.
+- bot shows inline button list;
+- test presses real `kek2` button;
+- final reply `Selected option: key2` is verified.
 
 ## Telegram debug logs
 
-- `TG_DEBUG_UPDATES=1` — включить лог всех входящих апдейтов бота в консоль.
-- `TG_DEBUG_UPDATES_FILE=1` — дополнительно писать эти логи в файл.
-- `TG_DEBUG_UPDATES_LOG_PATH` (опционально) — путь к файлу логов (по умолчанию `logs/telegram-updates.log`).
+- `TG_DEBUG_UPDATES=1` — enable logging of all incoming bot updates to console.
+- `TG_DEBUG_UPDATES_FILE=1` — additionally write these logs to file.
+- `TG_DEBUG_UPDATES_LOG_PATH` (optional) — log file path (default `logs/telegram-updates.log`).
 
 ## Send helper command
 
-- `pnpm tg:send-help` — отправить `/help` в `TG_TEST_CHAT_ID`.
-- Для кастомного текста: `pnpm tg:send-help -- "<text>"`.
-- Отправка выполняется через user MTProto-сессию (`TG_USER_SESSION`).
+- `pnpm tg:send-help` — send `/help` to `TG_TEST_CHAT_ID`.
+- Custom text: `pnpm tg:send-help -- "<text>"`.
+- Sending uses user MTProto session (`TG_USER_SESSION`).
