@@ -4,11 +4,11 @@ import { Prompt } from './form.decorator';
 import { tgForm, TgFormContext } from './tgForm';
 
 class CheckoutDto {
-  @Prompt('Введите товар')
+  @Prompt('Enter product')
   @IsString()
   product: string = '';
 
-  @Prompt('Введите количество')
+  @Prompt('Enter quantity')
   @IsInt()
   @Min(1)
   quantity: number = 0;
@@ -38,10 +38,10 @@ describe('tgForm flow', () => {
     expect(result.quantity).toBe(2);
 
     expect(replies).toEqual([
-      'Введите товар',
-      'Введите количество',
-      'Ошибка: quantity must not be less than 1',
-      'Введите количество',
+      'Enter product',
+      'Enter quantity',
+      'Error: quantity must not be less than 1',
+      'Enter quantity',
     ]);
 
     expect(ctx.waitForMessage).toHaveBeenCalledTimes(3);

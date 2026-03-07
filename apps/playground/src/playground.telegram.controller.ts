@@ -18,26 +18,26 @@ export class PlaygroundTelegramController {
 
   @TgCommand("start")
   onStart(ctx: Context) {
-    ctx.reply("Привет! Это кастомный /start от NestJS-бота");
+    ctx.reply("Hi! This is a custom /start from the NestJS bot");
   }
 
   @TgCommand("help")
   onHelp(ctx: Context) {
-    ctx.reply("Вот список команд: /start, /help, /menu, /order, /cancel");
+    ctx.reply("Available commands: /start, /help, /menu, /order, /cancel");
   }
 
   @TgCommand("menu")
   async onMenu(ctx: Context) {
     await this.menuService.start(ctx, {
       flowId: "main",
-      text: "Выберите раздел ниже.",
+      text: "Choose a section below.",
     });
   }
 
   @TgCommand("order")
   async onOrder(ctx: Context) {
     await ctx.reply(
-      "Запускаю форму заказа. Можно отменить в любой момент командой /cancel.",
+      "Starting the order form. You can cancel anytime with /cancel.",
     );
     try {
       const timeoutMsRaw = process.env.TG_FORM_TIMEOUT_MS;
@@ -50,15 +50,15 @@ export class PlaygroundTelegramController {
       const dto = await this.telegramService.form(OrderDto, { timeoutMs });
       await ctx.reply(
         [
-          "✅ Заказ принят:",
-          `• Товар: ${dto.product}`,
-          `• Кол-во: ${dto.quantity}`,
-          `• Размер: ${dto.size}`,
-          `• Дата: ${dto.deliveryDate.toISOString().slice(0, 10)}`,
+          "✅ Order accepted:",
+          `• Product: ${dto.product}`,
+          `• Quantity: ${dto.quantity}`,
+          `• Size: ${dto.size}`,
+          `• Date: ${dto.deliveryDate.toISOString().slice(0, 10)}`,
         ].join("\n"),
       );
     } catch (e: any) {
-      this.logger.warn(`Форма прервана: ${e?.message ?? e}`);
+      this.logger.warn(`Form interrupted: ${e?.message ?? e}`);
     }
   }
 
@@ -77,10 +77,10 @@ export class PlaygroundTelegramController {
 
     await ctx.reply(
       res.type === "selected"
-        ? `Выбран вариант: ${res.item.key}`
+        ? `Selected option: ${res.item.key}`
         : res.type === "timeout"
-          ? "Время выбора истекло."
-          : "Выбор отменён.",
+          ? "Selection timed out."
+          : "Selection cancelled.",
     );
 
     return;

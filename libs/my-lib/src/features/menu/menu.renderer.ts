@@ -69,7 +69,7 @@ export class MenuRenderer {
     if (showBack) {
       const backPath = pathSegments.slice(0, -1);
       const data = this.packer.pack(rootShort, backPath);
-      rows.push([{ text: '⬅️ Назад', callback_data: data }]);
+      rows.push([{ text: '⬅️ Back', callback_data: data }]);
     }
     const text = node.description ?? node.value ?? node.key;
     const reply_markup = { inline_keyboard: rows };

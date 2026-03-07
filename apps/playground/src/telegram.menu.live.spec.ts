@@ -42,66 +42,66 @@ describe('Telegram menu live integration', () => {
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Выберите раздел ниже.',
+      expectedTextPart: 'Choose a section below.',
       sinceMs: startMs,
     });
 
-    await clickInlineButtonByText({ env, buttonText: '🏠 Домой' });
+    await clickInlineButtonByText({ env, buttonText: '🏠 Home' });
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Домашний экран.',
+      expectedTextPart: 'Home screen.',
     });
 
-    await clickInlineButtonByText({ env, buttonText: '👤 Профиль' });
+    await clickInlineButtonByText({ env, buttonText: '👤 Profile' });
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Ваши данные и настройки профиля.',
+      expectedTextPart: 'Your profile data and settings.',
     });
 
-    await clickInlineButtonByText({ env, buttonText: 'Посмотреть профиль' });
+    await clickInlineButtonByText({ env, buttonText: 'View profile' });
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Профиль: выберите действие',
+      expectedTextPart: 'Profile: choose an action',
     });
 
-    await clickInlineButtonByText({ env, buttonText: '⬅️ В главное меню' });
+    await clickInlineButtonByText({ env, buttonText: '⬅️ Back to main menu' });
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Ваши данные и настройки профиля.',
+      expectedTextPart: 'Your profile data and settings.',
     });
 
-    await clickInlineButtonByText({ env, buttonText: '⬅️ Назад' });
+    await clickInlineButtonByText({ env, buttonText: '⬅️ Back' });
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Домашний экран.',
+      expectedTextPart: 'Home screen.',
     });
 
-    await clickInlineButtonByText({ env, buttonText: '⚙️ Настройки' });
+    await clickInlineButtonByText({ env, buttonText: '⚙️ Settings' });
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Общие параметры аккаунта.',
+      expectedTextPart: 'General account settings.',
     });
 
-    await clickInlineButtonByText({ env, buttonText: 'Уведомления' });
+    await clickInlineButtonByText({ env, buttonText: 'Notifications' });
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Включить/выключить уведомления.',
+      expectedTextPart: 'Enable or disable notifications.',
     });
 
-    await clickInlineButtonByText({ env, buttonText: '⬅️ Назад' });
+    await clickInlineButtonByText({ env, buttonText: '⬅️ Back' });
     const backText = await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Общие параметры аккаунта.',
+      expectedTextPart: 'General account settings.',
     });
 
-    expect(backText).toContain('Общие параметры аккаунта.');
+    expect(backText).toContain('General account settings.');
   });
 });

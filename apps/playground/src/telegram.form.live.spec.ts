@@ -60,56 +60,56 @@ describe('Telegram form live integration', () => {
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Запускаю форму заказа.',
+      expectedTextPart: 'Starting the order form.',
       sinceMs: orderStartMs,
     });
 
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Какой товар хотите заказать?',
+      expectedTextPart: 'What product would you like to order?',
       sinceMs: orderStartMs,
     });
 
-    await sendAndWait('Laptop', 'Сколько штук?');
+    await sendAndWait('Laptop', 'How many units?');
 
     const invalidQtyMs = Date.now();
     await sendLiveMessage({ env, text: '0' });
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Ошибка:',
+      expectedTextPart: 'Error:',
       sinceMs: invalidQtyMs,
     });
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Сколько штук?',
+      expectedTextPart: 'How many units?',
       sinceMs: invalidQtyMs,
     });
 
-    await sendAndWait('2', 'Выберите размер');
-    await sendAndWait('medium', 'Когда доставить?');
+    await sendAndWait('2', 'Choose size');
+    await sendAndWait('medium', 'When should we deliver?');
 
     const invalidDateMs = Date.now();
     await sendLiveMessage({ env, text: 'bad-date' });
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Ошибка:',
+      expectedTextPart: 'Error:',
       sinceMs: invalidDateMs,
     });
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Когда доставить?',
+      expectedTextPart: 'When should we deliver?',
       sinceMs: invalidDateMs,
     });
 
-    const summary = await sendAndWait('2026-03-15', '✅ Заказ принят:', 30_000);
-    expect(summary).toContain('Товар: Laptop');
-    expect(summary).toContain('Кол-во: 2');
-    expect(summary).toContain('Размер: medium');
+    const summary = await sendAndWait('2026-03-15', '✅ Order accepted:', 30_000);
+    expect(summary).toContain('Product: Laptop');
+    expect(summary).toContain('Quantity: 2');
+    expect(summary).toContain('Size: medium');
   });
 
   it('times out /order form with short timeout', async () => {
@@ -122,14 +122,14 @@ describe('Telegram form live integration', () => {
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Какой товар хотите заказать?',
+      expectedTextPart: 'What product would you like to order?',
       sinceMs: startMs,
     });
 
     const timeoutText = await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Время ожидания истекло.',
+      expectedTextPart: 'Waiting time expired.',
       sinceMs: startMs,
     });
 
@@ -145,7 +145,7 @@ describe('Telegram form live integration', () => {
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Какой товар хотите заказать?',
+      expectedTextPart: 'What product would you like to order?',
       sinceMs: startMs,
     });
 
@@ -155,10 +155,10 @@ describe('Telegram form live integration', () => {
     const cancelReply = await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Окей, отменил форму.',
+      expectedTextPart: 'Okay, form cancelled.',
       sinceMs: cancelSince,
     });
 
-    expect(cancelReply).toContain('Окей, отменил форму.');
+    expect(cancelReply).toContain('Okay, form cancelled.');
   });
 });

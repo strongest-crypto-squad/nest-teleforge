@@ -41,11 +41,11 @@ export class BotController {
   async onMenu(ctx: Context) {
     await this.menuService.start(ctx, {
       flowId: "main",
-      text: "Выберите действие",
+      text: "Choose an action",
     });
   }
 
-  @MenuAction("main", "home", { label: "🏠 Домой", description: "Домой" })
+  @MenuAction("main", "home", { label: "🏠 Home", description: "Home" })
   async onHome() {
     return "rerender" as const;
   }
@@ -77,11 +77,11 @@ pnpm run lib:publish
 
 Workflow: `.github/workflows/publish-my-lib.yml`
 
-- Автопубликация запускается по тегу `my-lib-vX.Y.Z` (например `my-lib-v1.2.0`).
-- Также доступен ручной запуск через `workflow_dispatch`.
-- Нужен GitHub Secret: `NPM_TOKEN` (npm automation token).
+- Auto-publish runs on tag `my-lib-vX.Y.Z` (for example `my-lib-v1.2.0`).
+- Manual run via `workflow_dispatch` is also available.
+- Required GitHub Secret: `NPM_TOKEN` (npm automation token).
 
-Пример релиза по тегу:
+Tag release example:
 
 ```bash
 git tag my-lib-v1.2.0

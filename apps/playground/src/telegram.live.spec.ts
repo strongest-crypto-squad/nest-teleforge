@@ -46,7 +46,7 @@ describe('Telegram live integration', () => {
       const reply = await waitForTargetReplyInChat({
         env,
         targetBotUsername,
-        expectedTextPart: 'Вот список команд:',
+        expectedTextPart: 'Available commands:',
         timeoutMs: 30_000,
       });
 

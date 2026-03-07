@@ -42,7 +42,7 @@ describe('Telegram list live integration', () => {
     await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Выберите вариант:',
+      expectedTextPart: 'Choose an option:',
       sinceMs: startMs,
     });
 
@@ -51,10 +51,10 @@ describe('Telegram list live integration', () => {
     const selectedText = await waitForTargetReplyInChat({
       env,
       targetBotUsername,
-      expectedTextPart: 'Выбран вариант: key2',
+      expectedTextPart: 'Selected option: key2',
       sinceMs: startMs,
     });
 
-    expect(selectedText).toContain('Выбран вариант: key2');
+    expect(selectedText).toContain('Selected option: key2');
   });
 });

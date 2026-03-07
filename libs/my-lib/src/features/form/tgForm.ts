@@ -11,7 +11,7 @@ function coerceType(value: string, type: Function): any {
     case Number:
       return Number(v);
     case Boolean:
-      return ["true", "1", "yes", "да", "y", "+"].includes(v.toLowerCase());
+      return ["true", "1", "yes", "y", "+"].includes(v.toLowerCase());
     case Date:
       return new Date(v);
     default:
@@ -40,7 +40,7 @@ export async function tgForm<T extends object>(
       const error = errors.find((e) => e.property === key);
       if (!error) break;
       const msg = Object.values(error.constraints!)[0];
-      await ctx.reply(`Ошибка: ${msg}`);
+      await ctx.reply(`Error: ${msg}`);
     }
   }
   return instance;
