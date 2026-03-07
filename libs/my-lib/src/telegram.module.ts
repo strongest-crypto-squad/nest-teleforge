@@ -8,7 +8,7 @@ import { MenuExplorer } from "./features/menu/menu.explorer";
 import { MenuService } from "./features/menu/menu.service";
 import { TelegramService } from "./telegram.service";
 import { WaitManager } from "./wait-manager";
-import { TELEGRAM_KEY } from "libs/my-lib/src/telegram.constant";
+import { TELEGRAM_KEY } from "./telegram.constant";
 
 function createTelegramProviders(telegramKeyProvider: Provider): Provider[] {
   return [

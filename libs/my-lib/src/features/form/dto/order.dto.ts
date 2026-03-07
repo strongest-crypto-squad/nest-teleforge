@@ -1,5 +1,5 @@
 import { IsEnum, IsInt, Min, IsDate, IsString } from "class-validator";
-import { Prompt } from "libs/my-lib/src/features/form/form.decorator";
+import { Prompt } from "../form.decorator";
 export enum Size {
   Small = "small",
   Medium = "medium",

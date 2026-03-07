@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { IsInt, IsString, Min } from 'class-validator';
-import { Prompt } from 'libs/my-lib/src/features/form/form.decorator';
+import { Prompt } from './form.decorator';
 import { tgForm, TgFormContext } from './tgForm';
 
 class CheckoutDto {

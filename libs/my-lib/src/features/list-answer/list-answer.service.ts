@@ -6,7 +6,7 @@ import {
   PageItem,
 } from "./dto/list-answer.types";
 import { normalizePredicates, checkPredicate } from "./list-answer.utils";
-import { WaitManager } from "libs/my-lib/src/wait-manager";
+import { WaitManager } from "../../wait-manager";
 
 const PAGE_SIZE = 5;
 

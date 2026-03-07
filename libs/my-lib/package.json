@@ -1,10 +1,45 @@
 {
   "name": "@your-scope/my-lib",
   "version": "0.1.0",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "description": "NestJS Telegram bot toolkit with command/form/menu flows",
+  "license": "ISC",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.lib.json",
+    "clean": "rm -rf dist",
+    "prepack": "pnpm run clean && pnpm run build"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "nestjs",
+    "telegram",
+    "telegraf",
+    "bot",
+    "menu",
+    "form"
+  ],
+  "peerDependenciesMeta": {
+    "@nestjs/core": {
+      "optional": false
+    },
+    "@nestjs/common": {
+      "optional": false
+    }
+  },
   "peerDependencies": {
-    "@nestjs/common": "^9 || ^10",
-    "@nestjs/core": "^9 || ^10"
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "reflect-metadata": "^0.2.2",
+    "telegraf": "^4.16.3"
+  },
+  "dependencies": {
+    "class-validator": "^0.14.3"
   }
 }

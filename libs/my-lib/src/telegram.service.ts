@@ -4,9 +4,9 @@ import { AsyncLocalStorage } from "async_hooks";
 import { message } from "telegraf/filters";
 import { appendFile, mkdir } from "fs/promises";
 import { dirname } from "path";
-import { TgFormContext, tgForm } from "libs/my-lib/src/features/form/tgForm";
-import { WaitManager } from "libs/my-lib/src/wait-manager";
-import { TELEGRAM_KEY } from "libs/my-lib/src/telegram.constant";
+import { TgFormContext, tgForm } from "./features/form/tgForm";
+import { WaitManager } from "./wait-manager";
+import { TELEGRAM_KEY } from "./telegram.constant";
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
