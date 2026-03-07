@@ -59,18 +59,22 @@ export async function resolveTargetDialogByPeerId(
     }
   });
 
-  if (!target?.entity) {
+  const targetEntity = target?.entity
+    ? target.entity
+    : await client.getEntity(chatId).catch(() => null);
+
+  if (!targetEntity) {
     throw new Error(
-      `Chat ${chatId} not found in user dialogs. Open this chat in Telegram app and retry.`,
+      `Chat ${chatId} not found in user dialogs and cannot be resolved directly. Open this chat in Telegram app and retry.`,
     );
   }
 
-  const targetPeerId = Number(utils.getPeerId(target.entity));
+  const targetPeerId = Number(utils.getPeerId(targetEntity));
   if (targetPeerId === selfPeerId) {
     throw new Error(
       `Resolved chat ${chatId} as Saved Messages. Use target group/channel id (usually -100...).`,
     );
   }
 
-  return target;
+  return { entity: targetEntity };
 }
