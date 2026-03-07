@@ -21,6 +21,7 @@ pnpm test:live
 - `TG_USER_API_ID`
 - `TG_USER_API_HASH`
 - `TG_USER_SESSION` (StringSession)
+- `TG_FORM_TIMEOUT_MS` (опционально) — timeout формы в мс, по умолчанию `60000`.
 
 Сгенерировать `TG_USER_SESSION` можно программно:
 
@@ -42,6 +43,16 @@ pnpm tg:gen-session -- --sms
 - запускать только на отдельном тестовом чате.
 
 Если env-переменные не заданы, live suite автоматически пропускается.
+
+### Form e2e corner cases
+
+В live e2e покрываются сценарии формы `/order`:
+
+- Happy path: успешное заполнение всех полей и финальный `✅ Заказ принят`.
+- Validation retry: невалидные `quantity` и `deliveryDate` возвращают `Ошибка:` и повторяют текущий prompt.
+- Timeout path: при коротком `TG_FORM_TIMEOUT_MS` бот отправляет сообщение об истечении времени.
+
+Рекомендовано для e2e: `TG_FORM_TIMEOUT_MS=10000`, чтобы не ждать 60 секунд.
 
 ## Telegram debug logs
 

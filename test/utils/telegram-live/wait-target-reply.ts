@@ -1,13 +1,12 @@
-import { Logger, TelegramClient, utils } from 'telegram';
-import { StringSession } from 'telegram/sessions';
 import { LiveEnv } from './types';
-import { resolveTargetDialogByPeerId } from './user-client';
+import { resolveTargetDialogByPeerId, withUserClient } from './user-client';
 
 export async function waitForTargetReplyInChat(params: {
   env: LiveEnv;
   targetBotUsername: string;
   expectedTextPart: string;
-  timeoutMs: number;
+  timeoutMs?: number;
+  sinceMs?: number;
 }): Promise<string> {
   return waitViaUserSession(params);
 }
@@ -16,35 +15,40 @@ async function waitViaUserSession(params: {
   env: LiveEnv;
   targetBotUsername: string;
   expectedTextPart: string;
-  timeoutMs: number;
+  timeoutMs?: number;
+  sinceMs?: number;
 }) {
-  const { env, targetBotUsername, expectedTextPart, timeoutMs } = params;
-  const client = new TelegramClient(
-    new StringSession(env.userSession),
-    env.userApiId,
-    env.userApiHash,
-    { connectionRetries: 3, baseLogger: new Logger('error' as any) },
-  );
+  const { env, expectedTextPart, timeoutMs = 30_000, sinceMs } = params;
+  return withUserClient(
+    {
+      apiId: env.userApiId,
+      apiHash: env.userApiHash,
+      session: env.userSession,
+    },
+    async (client) => {
+      const targetDialog = await resolveTargetDialogByPeerId(client, env.chatId);
+      const started = Date.now();
 
-  await client.connect();
-  try {
-    const targetDialog = await resolveTargetDialogByPeerId(client, env.chatId);
-    const started = Date.now();
-
-    while (Date.now() - started < timeoutMs) {
-      const messages = await client.getMessages(targetDialog.entity!, { limit: 20 });
-      for (const msg of messages) {
-        const text = (msg as any)?.message;
-        const sender = (msg as any)?.sender;
-        if (typeof text !== 'string') continue;
-        if (sender?.bot !== true || sender?.username !== targetBotUsername) continue;
-        if (text.includes(expectedTextPart)) return text;
+      while (Date.now() - started < timeoutMs) {
+        const messages = await client.getMessages(targetDialog.entity!, { limit: 20 });
+        for (const msg of messages) {
+          const text = (msg as any)?.message;
+          const dateSec = (msg as any)?.date;
+          const out = (msg as any)?.out;
+          if (typeof text !== 'string') continue;
+          if (out === true) continue;
+          if (typeof sinceMs === 'number') {
+            const messageMs = typeof dateSec === 'number' ? dateSec * 1000 : 0;
+            if (messageMs < sinceMs) continue;
+          }
+          if (text.includes(expectedTextPart)) return text;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
 
-    throw new Error(`Did not observe bot reply containing "${expectedTextPart}" in ${timeoutMs}ms`);
-  } finally {
-    await client.disconnect();
-  }
+      throw new Error(
+        `Did not observe bot reply containing "${expectedTextPart}" in ${timeoutMs}ms`,
+      );
+    },
+  );
 }

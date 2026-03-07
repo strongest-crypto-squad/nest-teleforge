@@ -27,7 +27,14 @@ export class TelegramController {
       "Запускаю форму заказа. Можно отменить в любой момент командой /cancel.",
     );
     try {
-      const dto = await this.telegramService.form(OrderDto);
+      const timeoutMsRaw = process.env.TG_FORM_TIMEOUT_MS;
+      const parsedTimeout = timeoutMsRaw ? Number(timeoutMsRaw) : NaN;
+      const timeoutMs =
+        Number.isFinite(parsedTimeout) && parsedTimeout > 0
+          ? parsedTimeout
+          : 60_000;
+
+      const dto = await this.telegramService.form(OrderDto, { timeoutMs });
       await ctx.reply(
         [
           "✅ Заказ принят:",

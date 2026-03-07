@@ -1,5 +1,7 @@
 const { loadDotEnv, requireEnv } = require('./lib/env.cjs');
+const { utils } = require('telegram');
 const {
+  closeUserClient,
   createUserClient,
   resolveTargetDialogByPeerId,
 } = require('./lib/telegram-user.cjs');
@@ -74,7 +76,7 @@ async function main() {
     messageId = String(sent.id ?? messageId);
     destination = `dialog=${target.name || 'unknown'} peerId=${Number(utils.getPeerId(target.entity))}`;
   } finally {
-    await client.disconnect();
+    await closeUserClient(client);
   }
 
   console.log('Sent command:', text);
