@@ -1,6 +1,7 @@
 # @your-scope/my-lib
 
 NestJS toolkit for Telegram bots built on Telegraf:
+
 - `@TgCommand()` command handlers
 - typed `telegramService.form()` form flow
 - `@MenuAction()` + `menuService.start()` menu flow with nested menus
@@ -16,13 +17,11 @@ pnpm add @nestjs/common @nestjs/core
 ## Quick start
 
 ```ts
-import { Module } from '@nestjs/common';
-import { TelegramModule } from '@your-scope/my-lib';
+import { Module } from "@nestjs/common";
+import { TelegramModule } from "@your-scope/my-lib";
 
 @Module({
-  imports: [
-    TelegramModule.forRoot(process.env.TELEGRAM_KEY!),
-  ],
+  imports: [TelegramModule.forRoot(process.env.TELEGRAM_KEY!)],
 })
 export class AppModule {}
 ```
@@ -30,25 +29,25 @@ export class AppModule {}
 ## Menu example
 
 ```ts
-import { Injectable } from '@nestjs/common';
-import { Context } from 'telegraf';
-import { TgCommand, MenuAction, MenuService } from '@your-scope/my-lib';
+import { Injectable } from "@nestjs/common";
+import { Context } from "telegraf";
+import { TgCommand, MenuAction, MenuService } from "@your-scope/my-lib";
 
 @Injectable()
 export class BotController {
   constructor(private readonly menuService: MenuService) {}
 
-  @TgCommand('menu')
+  @TgCommand("menu")
   async onMenu(ctx: Context) {
     await this.menuService.start(ctx, {
-      flowId: 'main',
-      text: 'Выберите действие',
+      flowId: "main",
+      text: "Выберите действие",
     });
   }
 
-  @MenuAction('main', 'home', { label: '🏠 Домой', description: 'Домой' })
+  @MenuAction("main", "home", { label: "🏠 Домой", description: "Домой" })
   async onHome() {
-    return 'rerender' as const;
+    return "rerender" as const;
   }
 }
 ```

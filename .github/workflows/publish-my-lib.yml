@@ -3,7 +3,7 @@ name: Publish my-lib to npm
 on:
   push:
     tags:
-      - 'my-lib-v*'
+      - "my-lib-v*"
   workflow_dispatch:
 
 jobs:
