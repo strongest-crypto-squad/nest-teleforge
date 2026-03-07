@@ -3,10 +3,7 @@ import { Context } from "telegraf";
 import { TgCommand } from "libs/my-lib/src/features/command/command.decorator";
 import { OrderDto } from "libs/my-lib/src/features/form/dto/order.dto";
 import { ListAnswerService } from "libs/my-lib/src/features/list-answer/list-answer.service";
-import {
-  MenuAction,
-  MenuActionResult,
-} from "libs/my-lib/src/features/menu/menu.decorator";
+import { MenuService } from "libs/my-lib/src/features/menu/menu.service";
 import { TelegramService } from "libs/my-lib/src/telegram.service";
 
 @Injectable()
@@ -16,6 +13,7 @@ export class PlaygroundTelegramController {
   constructor(
     private readonly telegramService: TelegramService,
     private readonly listAnswerService: ListAnswerService,
+    private readonly menuService: MenuService,
   ) {}
 
   @TgCommand("start")
@@ -25,7 +23,15 @@ export class PlaygroundTelegramController {
 
   @TgCommand("help")
   onHelp(ctx: Context) {
-    ctx.reply("Вот список команд: /start, /help, /order, /cancel");
+    ctx.reply("Вот список команд: /start, /help, /menu, /order, /cancel");
+  }
+
+  @TgCommand("menu")
+  async onMenu(ctx: Context) {
+    await this.menuService.start(ctx, {
+      flowId: "main",
+      text: "Выберите раздел ниже.",
+    });
   }
 
   @TgCommand("order")
@@ -56,15 +62,8 @@ export class PlaygroundTelegramController {
     }
   }
 
-  @MenuAction("main.home.profile.view")
-  async onProfileView(ctx: Context): Promise<MenuActionResult> {
-    await ctx.answerCbQuery();
-    await ctx.editMessageText("👤 Профиль — кастомный экран");
-    return "handled";
-  }
-
   @TgCommand("list")
-  async onList(ctx: Context): Promise<MenuActionResult> {
+  async onList(ctx: Context): Promise<void> {
     const list = [
       { key: "key1", label: "kek1" },
       { key: "key2", label: "kek2" },
@@ -84,6 +83,6 @@ export class PlaygroundTelegramController {
           : "Выбор отменён.",
     );
 
-    return "handled";
+    return;
   }
 }

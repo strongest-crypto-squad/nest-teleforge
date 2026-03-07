@@ -3,11 +3,9 @@ import { DiscoveryModule } from "@nestjs/core";
 
 import { TelegramExplorer } from "./features/command/command.explorer";
 import { ListAnswerService } from "./features/list-answer/list-answer.service";
-import { CallbackPacker } from "./features/menu/callback.packer";
 import { MenuContextBuilder } from "./features/menu/menu.context.builder";
 import { MenuExplorer } from "./features/menu/menu.explorer";
-import { MenuRenderer } from "./features/menu/menu.renderer";
-import { SchemaRegistryService } from "./features/menu/schema.registry";
+import { MenuService } from "./features/menu/menu.service";
 import { TelegramService } from "./telegram.service";
 import { WaitManager } from "./wait-manager";
 import { TELEGRAM_KEY } from "libs/my-lib/src/telegram.constant";
@@ -20,10 +18,8 @@ function createTelegramProviders(telegramKeyProvider: Provider): Provider[] {
     TelegramService,
     TelegramExplorer,
 
-    SchemaRegistryService,
     MenuContextBuilder,
-    MenuRenderer,
-    CallbackPacker,
+    MenuService,
     MenuExplorer,
     ListAnswerService,
   ];
@@ -46,7 +42,7 @@ export class TelegramModule {
         TelegramService,
         WaitManager,
         ListAnswerService,
-        SchemaRegistryService,
+        MenuService,
       ],
     };
   }
