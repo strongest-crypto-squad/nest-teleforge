@@ -6,12 +6,36 @@
 pnpm test
 ```
 
+Запуск конкретного файла:
+
+```bash
+pnpm test:file -- apps/playground/src/telegram.menu.live.spec.ts
+```
+
+Запуск конкретного `it`/`test` по имени:
+
+```bash
+pnpm test:case -- "navigates menu and handles inline button clicks"
+```
+
 ### Live Telegram integration test (real Bot API)
 
 Тест запускает реальный Nest-бот и проверяет `/help` в реальном чате через Telegram Bot API.
 
 ```bash
 pnpm test:live
+```
+
+Запуск конкретного live-файла:
+
+```bash
+pnpm test:live:file -- apps/playground/src/telegram.menu.live.spec.ts
+```
+
+Запуск конкретного live-теста по имени:
+
+```bash
+pnpm test:live:case -- "navigates menu and handles inline button clicks"
 ```
 
 Нужны переменные окружения:

@@ -6,9 +6,13 @@
   "scripts": {
     "dev": "nest start playground --debug --watch",
     "test": "jest",
+    "test:file": "node scripts/run-jest.cjs file",
+    "test:case": "node scripts/run-jest.cjs case",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:live": "jest -c jest.live.config.cjs",
+    "test:live:file": "node scripts/run-jest.cjs live-file",
+    "test:live:case": "node scripts/run-jest.cjs live-case",
     "tg:send-help": "node scripts/send-help.cjs",
     "tg:gen-session": "node scripts/gen-user-session.cjs"
   },
