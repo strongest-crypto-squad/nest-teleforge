@@ -1,8 +1,17 @@
 {
-  "name": "@your-scope/my-lib",
+  "name": "nest-teleforge",
   "version": "0.1.0",
   "description": "NestJS Telegram bot toolkit with command/form/menu flows",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/strongest-crypto-squad/nest-teleforge.git",
+    "directory": "libs/my-lib"
+  },
+  "homepage": "https://github.com/strongest-crypto-squad/nest-teleforge/tree/main/libs/my-lib",
+  "bugs": {
+    "url": "https://github.com/strongest-crypto-squad/nest-teleforge/issues"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
