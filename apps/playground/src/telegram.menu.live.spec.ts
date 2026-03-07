@@ -53,6 +53,34 @@ describe('Telegram menu live integration', () => {
       expectedTextPart: 'Домашний экран.',
     });
 
+    await clickInlineButtonByText({ env, buttonText: '👤 Профиль' });
+    await waitForTargetReplyInChat({
+      env,
+      targetBotUsername,
+      expectedTextPart: 'Ваши данные и настройки профиля.',
+    });
+
+    await clickInlineButtonByText({ env, buttonText: 'Посмотреть профиль' });
+    await waitForTargetReplyInChat({
+      env,
+      targetBotUsername,
+      expectedTextPart: 'Профиль: выберите действие',
+    });
+
+    await clickInlineButtonByText({ env, buttonText: '⬅️ В главное меню' });
+    await waitForTargetReplyInChat({
+      env,
+      targetBotUsername,
+      expectedTextPart: 'Ваши данные и настройки профиля.',
+    });
+
+    await clickInlineButtonByText({ env, buttonText: '⬅️ Назад' });
+    await waitForTargetReplyInChat({
+      env,
+      targetBotUsername,
+      expectedTextPart: 'Домашний экран.',
+    });
+
     await clickInlineButtonByText({ env, buttonText: '⚙️ Настройки' });
     await waitForTargetReplyInChat({
       env,
