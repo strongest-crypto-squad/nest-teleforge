@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nest start playground --debug --watch",
+    "lib:build": "pnpm --dir libs/my-lib run build",
+    "lib:pack": "mkdir -p artifacts/npm && pnpm --dir libs/my-lib pack --pack-destination ../../artifacts/npm",
+    "lib:publish": "pnpm --dir libs/my-lib publish",
     "test": "jest",
     "test:file": "node scripts/run-jest.cjs file",
     "test:case": "node scripts/run-jest.cjs case",

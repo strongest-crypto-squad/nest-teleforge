@@ -1,0 +1,58 @@
+name: Publish my-lib to npm
+
+on:
+  push:
+    tags:
+      - 'my-lib-v*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate package name
+        run: |
+          PKG_NAME=$(node -p "require('./libs/my-lib/package.json').name")
+          if [ "$PKG_NAME" = "@your-scope/my-lib" ]; then
+            echo "Set a real npm package name in libs/my-lib/package.json before publishing."
+            exit 1
+          fi
+
+      - name: Sync version from tag
+        if: startsWith(github.ref, 'refs/tags/my-lib-v')
+        run: |
+          VERSION="${GITHUB_REF_NAME#my-lib-v}"
+          cd libs/my-lib
+          npm version "$VERSION" --no-git-tag-version
+
+      - name: Build library
+        run: pnpm run lib:build
+
+      - name: Publish to npm
+        run: |
+          cd libs/my-lib
+          pnpm publish --access public --no-git-checks --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

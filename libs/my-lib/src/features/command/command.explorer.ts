@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit, Logger } from "@nestjs/common";
 import { DiscoveryService, MetadataScanner, Reflector } from "@nestjs/core";
-import { TG_COMMAND_METADATA } from "libs/my-lib/src/features/command/command.decorator";
-import { TelegramService } from "libs/my-lib/src/telegram.service";
+import { TG_COMMAND_METADATA } from "./command.decorator";
+import { TelegramService } from "../../telegram.service";
 import { Context } from "telegraf";
 
 @Injectable()

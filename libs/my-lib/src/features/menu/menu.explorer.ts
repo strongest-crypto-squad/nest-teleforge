@@ -3,7 +3,7 @@ import { DiscoveryService, MetadataScanner, Reflector } from "@nestjs/core";
 import type { Context } from "telegraf";
 import { MENU_ACTION_METADATA, MenuActionMetadata } from "./menu.decorator";
 import { MenuService } from "./menu.service";
-import { TelegramService } from "libs/my-lib/src/telegram.service";
+import { TelegramService } from "../../telegram.service";
 @Injectable()
 export class MenuExplorer implements OnModuleInit {
   private readonly logger = new Logger(MenuExplorer.name);

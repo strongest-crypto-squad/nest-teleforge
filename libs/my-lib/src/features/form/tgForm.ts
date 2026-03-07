@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { validateSync } from "class-validator";
-import { getPrompt } from "libs/my-lib/src/features/form/form.decorator";
+import { getPrompt } from "./form.decorator";
 export interface TgFormContext {
   reply: (text: string) => Promise<void>;
   waitForMessage: () => Promise<string>;
