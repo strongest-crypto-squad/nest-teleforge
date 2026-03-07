@@ -1,4 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { Context } from "telegraf";
 import { TgCommand } from "libs/my-lib/src/features/command/command.decorator";
 import { OrderDto } from "libs/my-lib/src/features/form/dto/order.dto";
 import { ListAnswerService } from "libs/my-lib/src/features/list-answer/list-answer.service";
@@ -7,22 +8,28 @@ import {
   MenuActionResult,
 } from "libs/my-lib/src/features/menu/menu.decorator";
 import { TelegramService } from "libs/my-lib/src/telegram.service";
-import { Context } from "telegraf";
 
 @Injectable()
-export class TelegramController {
-  private readonly logger = new Logger(TelegramController.name);
+export class PlaygroundTelegramController {
+  private readonly logger = new Logger(PlaygroundTelegramController.name);
+
   constructor(
     private readonly telegramService: TelegramService,
     private readonly listAnswerService: ListAnswerService,
   ) {}
-  @TgCommand("start") onStart(ctx: Context) {
+
+  @TgCommand("start")
+  onStart(ctx: Context) {
     ctx.reply("Привет! Это кастомный /start от NestJS-бота");
   }
-  @TgCommand("help") onHelp(ctx: Context) {
+
+  @TgCommand("help")
+  onHelp(ctx: Context) {
     ctx.reply("Вот список команд: /start, /help, /order, /cancel");
   }
-  @TgCommand("order") async onOrder(ctx: Context) {
+
+  @TgCommand("order")
+  async onOrder(ctx: Context) {
     await ctx.reply(
       "Запускаю форму заказа. Можно отменить в любой момент командой /cancel.",
     );
@@ -57,7 +64,7 @@ export class TelegramController {
   }
 
   @TgCommand("list")
-  async onNeProfileView(ctx: Context): Promise<MenuActionResult> {
+  async onList(ctx: Context): Promise<MenuActionResult> {
     const list = [
       { key: "key1", label: "kek1" },
       { key: "key2", label: "kek2" },

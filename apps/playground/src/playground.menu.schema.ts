@@ -1,23 +1,10 @@
-export type TgCtx = any;
-export type Predicate = (ctx: TgCtx) => boolean | Promise<boolean>;
-export interface MenuSchema {
-  key: string;
-  value?: string;
-  description?: string;
-  order?: number;
-  back?: boolean;
-  guard?: Predicate | Predicate[];
-  disabled?: Predicate | Predicate[];
-  disabledText?: string;
-  hidden?: boolean;
-  layout?: { columns?: number };
-  command?: string;
-  c?: Record<string, MenuSchema>;
-}
+import { MenuNode, Predicate } from "libs/my-lib/src/features/menu/menu.types";
+
 const isAdmin: Predicate = (ctx) => ctx.user?.isAdmin === true;
 const isPaid: Predicate = (ctx) => ctx.user?.paid === true;
 const notPaid: Predicate = (ctx) => !ctx.user?.paid;
-export const EXAMPLE_SCHEMA: MenuSchema = {
+
+export const PLAYGROUND_MENU_SCHEMA: MenuNode = {
   key: "main",
   command: "/menu",
   back: false,

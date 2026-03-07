@@ -8,8 +8,6 @@ import { MenuContextBuilder } from "./features/menu/menu.context.builder";
 import { MenuExplorer } from "./features/menu/menu.explorer";
 import { MenuRenderer } from "./features/menu/menu.renderer";
 import { SchemaRegistryService } from "./features/menu/schema.registry";
-import { EXAMPLE_SCHEMA } from "./schemas/example";
-import { TelegramController } from "./telegram.controller.tg";
 import { TelegramService } from "./telegram.service";
 import { WaitManager } from "./wait-manager";
 import { TELEGRAM_KEY } from "libs/my-lib/src/telegram.constant";
@@ -21,7 +19,6 @@ function createTelegramProviders(telegramKeyProvider: Provider): Provider[] {
     WaitManager,
     TelegramService,
     TelegramExplorer,
-    TelegramController,
 
     SchemaRegistryService,
     MenuContextBuilder,
@@ -29,15 +26,6 @@ function createTelegramProviders(telegramKeyProvider: Provider): Provider[] {
     CallbackPacker,
     MenuExplorer,
     ListAnswerService,
-
-    {
-      provide: "MENU_SCHEMA_REGISTRAR",
-      useFactory: (registry: SchemaRegistryService) => {
-        registry.registerSchema(EXAMPLE_SCHEMA);
-        return true;
-      },
-      inject: [SchemaRegistryService],
-    },
   ];
 }
 
@@ -54,7 +42,12 @@ export class TelegramModule {
       module: TelegramModule,
       imports: [DiscoveryModule, ...(options.imports ?? [])],
       providers: createTelegramProviders(telegramKeyProvider),
-      exports: [TelegramService, WaitManager],
+      exports: [
+        TelegramService,
+        WaitManager,
+        ListAnswerService,
+        SchemaRegistryService,
+      ],
     };
   }
 
