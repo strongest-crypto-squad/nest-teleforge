@@ -11,21 +11,29 @@ export async function withUserClient<T>(
   params: UserClientParams,
   run: (client: TelegramClient) => Promise<T>,
 ): Promise<T> {
+  const clientOptions = {
+    connectionRetries: 3,
+    receiveUpdates: false,
+    baseLogger: new Logger('error' as any),
+  } as any;
+
   const client = new TelegramClient(
     new StringSession(params.session),
     params.apiId,
     params.apiHash,
-    {
-      connectionRetries: 3,
-      baseLogger: new Logger('error' as any),
-    },
+    clientOptions,
   );
 
   await client.connect();
   try {
     return await run(client);
   } finally {
-    await client.disconnect();
+    try {
+      await client.disconnect();
+    } catch {}
+    try {
+      await client.destroy();
+    } catch {}
   }
 }
 

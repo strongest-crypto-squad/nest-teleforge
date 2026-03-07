@@ -4,8 +4,19 @@ const { StringSession } = require('telegram/sessions');
 function createUserClient({ apiId, apiHash, session }) {
   return new TelegramClient(new StringSession(session), apiId, apiHash, {
     connectionRetries: 5,
+    receiveUpdates: false,
     baseLogger: new Logger('error'),
   });
+}
+
+async function closeUserClient(client) {
+  if (!client) return;
+  try {
+    await client.disconnect();
+  } catch {}
+  try {
+    await client.destroy();
+  } catch {}
 }
 
 async function resolveTargetDialogByPeerId(client, chatId) {
@@ -38,5 +49,6 @@ async function resolveTargetDialogByPeerId(client, chatId) {
 
 module.exports = {
   createUserClient,
+  closeUserClient,
   resolveTargetDialogByPeerId,
 };

@@ -6,5 +6,6 @@ module.exports = {
   testMatch: ['**/*.live.spec.ts'],
   setupFiles: ['<rootDir>/test/live-env.setup.cjs'],
   moduleDirectories: ['node_modules', '<rootDir>'],
+  maxWorkers: 1,
   clearMocks: true,
 };
