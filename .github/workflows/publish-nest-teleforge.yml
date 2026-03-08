@@ -1,69 +1,32 @@
-name: Publish nest-teleforge to npm
+name: Publish Package
 
 on:
   push:
     tags:
       - "nest-teleforge-v*"
-  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - uses: pnpm/action-setup@v4
         with:
           version: 10.12.4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          registry-url: https://registry.npmjs.org
-          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lib:build
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Validate package name
-        run: |
-          PKG_NAME=$(node -p "require('./libs/nest-teleforge/package.json').name")
-          if [ -z "$PKG_NAME" ] || [ "$PKG_NAME" = "@your-scope/nest-teleforge" ]; then
-            echo "Set a real publishable package name in libs/nest-teleforge/package.json before publishing."
-            exit 1
-          fi
-
-      - name: Preflight npm package visibility
-        run: |
-          PKG_NAME=$(node -p "require('./libs/nest-teleforge/package.json').name")
-
-          if npm view "$PKG_NAME" version >/dev/null 2>&1; then
-            echo "Package '$PKG_NAME' is visible in npm registry."
-          else
-            echo "::error::Package '$PKG_NAME' is not visible in npm registry."
-            echo "::error::Most common causes: wrong scope ownership or missing Trusted Publisher binding for this package."
-            echo "::error::If this is the first publish for the scope/package, publish once from the owner account or configure Trusted Publisher for this exact package name."
-            exit 1
-          fi
-
-      - name: Sync version from tag
-        if: startsWith(github.ref, 'refs/tags/nest-teleforge-v')
-        run: |
-          VERSION="${GITHUB_REF_NAME#nest-teleforge-v}"
+      - run: |
           cd libs/nest-teleforge
-          npm version "$VERSION"
-
-      - name: Build library
-        run: pnpm run lib:build
-
-      - name: Publish to npm
-        run: |
-          cd libs/nest-teleforge
-          npm publish --access public --provenance
+          npm publish
