@@ -1,4 +1,4 @@
-# @gladpack/nest-teleforge
+# nest-teleforge
 
 NestJS toolkit for Telegram bots on top of Telegraf.
 
@@ -13,14 +13,14 @@ NestJS toolkit for Telegram bots on top of Telegraf.
 ## Installation
 
 ```bash
-pnpm add @gladpack/nest-teleforge @nestjs/common @nestjs/core telegraf reflect-metadata class-validator
+pnpm add nest-teleforge @nestjs/common @nestjs/core telegraf reflect-metadata class-validator
 ```
 
 ## Module setup
 
 ```ts
 import { Module } from "@nestjs/common";
-import { TelegramModule } from "@gladpack/nest-teleforge";
+import { TelegramModule } from "nest-teleforge";
 
 @Module({
   imports: [TelegramModule.forRoot(process.env.TELEGRAM_KEY!)],
@@ -45,7 +45,7 @@ Methods decorated with `@TgCommand("name")` are registered as Telegram bot comma
 ```ts
 import { Injectable } from "@nestjs/common";
 import { Context } from "telegraf";
-import { TgCommand } from "@gladpack/nest-teleforge";
+import { TgCommand } from "nest-teleforge";
 
 @Injectable()
 export class BotCommands {
@@ -62,7 +62,7 @@ Use class-validator DTO + `@Prompt()` metadata to build a step-by-step conversat
 
 ```ts
 import { IsInt, Min, IsDateString } from "class-validator";
-import { Prompt } from "@gladpack/nest-teleforge";
+import { Prompt } from "nest-teleforge";
 
 export class OrderDto {
   @Prompt("Product name")
@@ -82,7 +82,7 @@ export class OrderDto {
 ```ts
 import { Injectable } from "@nestjs/common";
 import { Context } from "telegraf";
-import { TgCommand, TelegramService } from "@gladpack/nest-teleforge";
+import { TgCommand, TelegramService } from "nest-teleforge";
 
 @Injectable()
 export class FormCommands {
@@ -114,7 +114,7 @@ Behavior:
 ```ts
 import { Injectable } from "@nestjs/common";
 import { Context } from "telegraf";
-import { ListAnswerService, TgCommand } from "@gladpack/nest-teleforge";
+import { ListAnswerService, TgCommand } from "nest-teleforge";
 
 @Injectable()
 export class ListCommands {
@@ -161,7 +161,7 @@ Flow is started explicitly from a command (or any handler) with `menuService.sta
 ```ts
 import { Injectable } from "@nestjs/common";
 import { Context } from "telegraf";
-import { MenuAction, MenuService, TgCommand } from "@gladpack/nest-teleforge";
+import { MenuAction, MenuService, TgCommand } from "nest-teleforge";
 
 @Injectable()
 export class MenuHandlers {

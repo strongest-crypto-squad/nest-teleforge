@@ -1,6 +1,6 @@
 {
-  "name": "@gladpack/nest-teleforge",
-  "version": "0.1.0",
+  "name": "nest-teleforge",
+  "version": "0.1.1",
   "description": "NestJS Telegram bot toolkit with command/form/menu flows",
   "license": "ISC",
   "repository": {

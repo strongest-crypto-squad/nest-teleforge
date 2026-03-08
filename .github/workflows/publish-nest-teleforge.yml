@@ -35,7 +35,7 @@ jobs:
       - name: Validate package name
         run: |
           PKG_NAME=$(node -p "require('./libs/nest-teleforge/package.json').name")
-          if [ "$PKG_NAME" = "@your-scope/nest-teleforge" ] || [ "$PKG_NAME" = "nest-teleforge" ]; then
+          if [ -z "$PKG_NAME" ] || [ "$PKG_NAME" = "@your-scope/nest-teleforge" ]; then
             echo "Set a real publishable package name in libs/nest-teleforge/package.json before publishing."
             exit 1
           fi
