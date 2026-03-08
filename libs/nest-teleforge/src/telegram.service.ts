@@ -116,7 +116,12 @@ export class TelegramService implements OnModuleInit {
       return next();
     });
 
-    await this.bot.telegram.deleteWebhook({ drop_pending_updates: true });
+    try {
+      await this.bot.telegram.deleteWebhook({ drop_pending_updates: true });
+    } catch (e: any) {
+      this.logger.error(`Failed to delete webhook (is the bot token valid?): ${e.message}`, e.stack);
+      throw e;
+    }
     this.bot.launch();
     this.logger.log("Telegram bot launched");
   }
