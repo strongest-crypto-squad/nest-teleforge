@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { TelegramService } from 'libs/my-lib/src';
+import { TelegramService } from 'libs/nest-teleforge/src';
 import { LiveBotHarness } from './types';
 
 export async function createLiveBotHarness(

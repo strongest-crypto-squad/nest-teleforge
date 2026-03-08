@@ -1,4 +1,4 @@
-import { MenuNode, Predicate } from "libs/my-lib/src/features/menu/menu.types";
+import { MenuNode, Predicate } from "libs/nest-teleforge/src/features/menu/menu.types";
 
 const isAdmin: Predicate = (ctx) => ctx.user?.isAdmin === true;
 const isPaid: Predicate = (ctx) => ctx.user?.paid === true;

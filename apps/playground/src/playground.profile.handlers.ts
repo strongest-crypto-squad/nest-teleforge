@@ -3,8 +3,8 @@ import type { Context } from "telegraf";
 import {
   MenuAction,
   MenuActionResult,
-} from "libs/my-lib/src/features/menu/menu.decorator";
-import { MenuService } from "libs/my-lib/src/features/menu/menu.service";
+} from "libs/nest-teleforge/src/features/menu/menu.decorator";
+import { MenuService } from "libs/nest-teleforge/src/features/menu/menu.service";
 
 @Injectable()
 export class PlaygroundProfileHandlers {

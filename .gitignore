@@ -4,3 +4,4 @@ artifacts/
 
 .env
 logs
+.npmrc

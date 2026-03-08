@@ -1,12 +1,12 @@
 {
   "projects": {
-    "my-lib": {
+    "nest-teleforge-lib": {
       "type": "library",
-      "root": "libs/my-lib",
+      "root": "libs/nest-teleforge",
       "entryFile": "index",
-      "sourceRoot": "libs/my-lib/src",
+      "sourceRoot": "libs/nest-teleforge/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/my-lib/tsconfig.lib.json"
+        "tsConfigPath": "libs/nest-teleforge/tsconfig.lib.json"
       }
     },
     "nest-teleforge": {

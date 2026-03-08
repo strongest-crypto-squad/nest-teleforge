@@ -5,7 +5,7 @@ import { PlaygroundController } from "./playground.controller";
 import { PlaygroundProfileHandlers } from "./playground.profile.handlers";
 import { PlaygroundService } from "./playground.service";
 import { PlaygroundTelegramController } from "./playground.telegram.controller";
-import { TelegramModule } from "libs/my-lib/src";
+import { TelegramModule } from "libs/nest-teleforge/src";
 
 @Module({
   imports: [

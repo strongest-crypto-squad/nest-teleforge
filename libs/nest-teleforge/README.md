@@ -1,4 +1,4 @@
-# @raccoon\_\_\_/nest-teleforge
+# @raccoon___/nest-teleforge
 
 NestJS toolkit for Telegram bots built on Telegraf:
 

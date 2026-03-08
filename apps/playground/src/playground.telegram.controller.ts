@@ -1,10 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Context } from "telegraf";
-import { TgCommand } from "libs/my-lib/src/features/command/command.decorator";
-import { OrderDto } from "libs/my-lib/src/features/form/dto/order.dto";
-import { ListAnswerService } from "libs/my-lib/src/features/list-answer/list-answer.service";
-import { MenuService } from "libs/my-lib/src/features/menu/menu.service";
-import { TelegramService } from "libs/my-lib/src/telegram.service";
+import { TgCommand } from "libs/nest-teleforge/src/features/command/command.decorator";
+import { OrderDto } from "libs/nest-teleforge/src/features/form/dto/order.dto";
+import { ListAnswerService } from "libs/nest-teleforge/src/features/list-answer/list-answer.service";
+import { MenuService } from "libs/nest-teleforge/src/features/menu/menu.service";
+import { TelegramService } from "libs/nest-teleforge/src/telegram.service";
 
 @Injectable()
 export class PlaygroundTelegramController {

@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { TelegramService } from 'libs/my-lib/src';
+import { TelegramService } from 'libs/nest-teleforge/src';
 
 export type TgUser = {
   id: number;
