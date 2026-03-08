@@ -64,8 +64,6 @@ jobs:
         run: pnpm run lib:build
 
       - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           cd libs/nest-teleforge
-          npm publish --access public
+          npm publish --access public --provenance
