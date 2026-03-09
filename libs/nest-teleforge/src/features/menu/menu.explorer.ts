@@ -22,7 +22,10 @@ export class MenuExplorer implements OnModuleInit {
   }
 
   private scanActionHandlers() {
-    for (const w of this.discovery.getProviders()) {
+    const providers = this.discovery.getProviders();
+    const controllers = this.discovery.getControllers();
+    
+    for (const w of [...providers, ...controllers]) {
       const instance = w.instance as any;
       if (!instance || typeof instance !== "object") continue;
       const proto = Object.getPrototypeOf(instance);

@@ -17,7 +17,8 @@ export class TelegramExplorer implements OnModuleInit {
   onModuleInit() {
     const bot = this.botService.getBot();
     const providers = this.discoveryService.getProviders();
-    for (const w of providers) {
+    const controllers = this.discoveryService.getControllers();
+    for (const w of [...providers, ...controllers]) {
       const instance = w.instance;
       if (!instance || typeof instance !== "object") continue;
       const proto = Object.getPrototypeOf(instance);

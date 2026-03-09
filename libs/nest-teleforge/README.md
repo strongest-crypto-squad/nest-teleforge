@@ -215,6 +215,52 @@ Nested flow support:
 - `menuService.start(..., { mode: "push" })` starts child flow on top of current flow
 - `menuService.closeCurrent(ctx, { renderPrevious: true })` closes current flow and re-renders previous one
 
+### Isolated / Service-initiated (Rootless) menus
+
+If you need to send a menu not from a root command, but from a background job, service, or alert (e.g. notifications), you can define a dummy "anchor" function and use it as `parentFunction` for the root-level buttons of that specific menu to isolate it from other flows.
+
+```ts
+import { Controller } from '@nestjs/common';
+import { MenuAction, MenuService } from 'nest-teleforge';
+
+// 1. Define an empty anchor function 
+const DeployMenuRoot = () => {}; 
+const DEPLOY_FLOW = 'deploy_flow';
+
+@Controller()
+export class DeployMenuController {
+  // 2. Bind top-level buttons to the anchor function
+  @MenuAction(DEPLOY_FLOW, 'deploy', {
+    label: 'Deploy',
+    parentFunction: DeployMenuRoot,
+  })
+  onDeploy() { return 'rerender'; }
+
+  @MenuAction(DEPLOY_FLOW, 'confirm', {
+    label: 'Confirm ✅',
+    parentFunction: DeployMenuController.prototype.onDeploy, // nested under 'deploy'
+  })
+  async onConfirm(ctx) {
+    await ctx.reply('Deployed!');
+    return 'handled';
+  }
+}
+
+// 3. From any service, start the menu by providing the anchor function
+@Injectable()
+export class NotificationService {
+  constructor(private readonly menuService: MenuService) {}
+
+  async sendAlert(ctx: Context) {
+    await this.menuService.start(ctx, {
+      flowId: DEPLOY_FLOW,
+      text: 'New image available!',
+      parentFunction: DeployMenuRoot, // Context starts directly from anchor
+    });
+  }
+}
+```
+
 ## Low-level exports
 
 - `TelegramService` — bot instance access (`getBot`) and form API
