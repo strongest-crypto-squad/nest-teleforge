@@ -220,29 +220,31 @@ Nested flow support:
 If you need to send a menu not from a root command, but from a background job, service, or alert (e.g. notifications), you can define a dummy "anchor" function and use it as `parentFunction` for the root-level buttons of that specific menu to isolate it from other flows.
 
 ```ts
-import { Controller } from '@nestjs/common';
-import { MenuAction, MenuService } from 'nest-teleforge';
+import { Controller } from "@nestjs/common";
+import { MenuAction, MenuService } from "nest-teleforge";
 
-// 1. Define an empty anchor function 
-const DeployMenuRoot = () => {}; 
-const DEPLOY_FLOW = 'deploy_flow';
+// 1. Define an empty anchor function
+const DeployMenuRoot = () => {};
+const DEPLOY_FLOW = "deploy_flow";
 
 @Controller()
 export class DeployMenuController {
   // 2. Bind top-level buttons to the anchor function
-  @MenuAction(DEPLOY_FLOW, 'deploy', {
-    label: 'Deploy',
+  @MenuAction(DEPLOY_FLOW, "deploy", {
+    label: "Deploy",
     parentFunction: DeployMenuRoot,
   })
-  onDeploy() { return 'rerender'; }
+  onDeploy() {
+    return "rerender";
+  }
 
-  @MenuAction(DEPLOY_FLOW, 'confirm', {
-    label: 'Confirm ✅',
+  @MenuAction(DEPLOY_FLOW, "confirm", {
+    label: "Confirm ✅",
     parentFunction: DeployMenuController.prototype.onDeploy, // nested under 'deploy'
   })
   async onConfirm(ctx) {
-    await ctx.reply('Deployed!');
-    return 'handled';
+    await ctx.reply("Deployed!");
+    return "handled";
   }
 }
 
@@ -254,7 +256,7 @@ export class NotificationService {
   async sendAlert(ctx: Context) {
     await this.menuService.start(ctx, {
       flowId: DEPLOY_FLOW,
-      text: 'New image available!',
+      text: "New image available!",
       parentFunction: DeployMenuRoot, // Context starts directly from anchor
     });
   }
