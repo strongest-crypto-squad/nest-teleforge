@@ -1,4 +1,4 @@
-import { PlaygroundModule } from './playground.module';
+import { PlaygroundModule } from "./playground.module";
 import {
   callBotApi,
   createLiveBotHarness,
@@ -9,35 +9,43 @@ import {
   sendLiveMessage,
   waitForTargetReplyInChat,
   TgUser,
-} from 'test/utils/telegram-live';
+} from "test/utils/telegram-live";
 
-describe('Telegram live integration', () => {
+describe("Telegram live integration", () => {
   jest.setTimeout(120_000);
 
-  describe('real Bot API flow', () => {
+  describe("real Bot API flow", () => {
     let harness: LiveBotHarness;
     let env!: LiveEnv;
-    let targetBotUsername = '';
+    let targetBotUsername = "";
 
     beforeAll(async () => {
       env = getRequiredLiveEnv();
 
       process.env.TELEGRAM_KEY = env.targetToken;
 
-      const me = await callBotApi<TgUser>(env.targetToken, 'getMe');
+      const me = await callBotApi<TgUser>(env.targetToken, "getMe");
       if (!me.username) {
-        throw new Error('Target bot must have username');
+        throw new Error("Target bot must have username");
       }
       targetBotUsername = me.username;
 
       harness = await createLiveBotHarness(PlaygroundModule, env.targetToken);
     });
 
+    beforeEach(async () => {
+      const testName = expect.getState().currentTestName ?? "Unnamed test";
+      await callBotApi(env.targetToken, "sendMessage", {
+        chat_id: env.chatId,
+        text: `🧪 ${testName}`,
+      });
+    });
+
     afterAll(async () => {
       await disposeLiveBotHarness(harness);
     });
 
-    it('handles /help command in real chat', async () => {
+    it("handles /help command in real chat", async () => {
       await sendLiveMessage({
         env,
         text: `/help`,
@@ -46,11 +54,11 @@ describe('Telegram live integration', () => {
       const reply = await waitForTargetReplyInChat({
         env,
         targetBotUsername,
-        expectedTextPart: 'Available commands:',
+        expectedTextPart: "Available commands:",
         timeoutMs: 30_000,
       });
 
-      expect(reply).toContain('/order');
+      expect(reply).toContain("/order");
     });
   });
 });

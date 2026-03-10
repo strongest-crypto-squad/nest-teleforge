@@ -7,6 +7,8 @@ NestJS toolkit for Telegram bots on top of Telegraf.
 - `@TgCommand()` command handlers discovered automatically
 - `telegramService.form()` typed conversational forms with validation
 - `@MenuAction()` + `menuService.start()` inline keyboard menus with nested navigation
+- Typed menu context via `MenuAction<SessionData, ButtonPayload>` and `MenuActionCtx`
+- Per-menu mutable session data with pluggable store (`MENU_SESSION_STORE`)
 - `listAnswerService.ask()` selectable lists with pagination, predicates, cancel and timeout
 - Low-level `WaitManager` for custom waiting flows
 
@@ -23,19 +25,51 @@ import { Module } from "@nestjs/common";
 import { TelegramModule } from "nest-teleforge";
 
 @Module({
-  imports: [TelegramModule.forRoot(process.env.TELEGRAM_KEY!)],
+  imports: [
+    TelegramModule.forRoot({
+      telegramKey: process.env.TELEGRAM_KEY!,
+      menuSession: {
+        inMemory: {
+          defaultTtlMs: 10 * 60 * 1000,
+          maxEntries: 20_000,
+        },
+      },
+    }),
+  ],
 })
 export class AppModule {}
 ```
+
+`TelegramModule.forRoot(process.env.TELEGRAM_KEY!)` is still supported for backward compatibility.
 
 Async configuration:
 
 ```ts
 TelegramModule.forRootAsync({
   inject: [ConfigService],
-  useFactory: (config: ConfigService) =>
-    config.getOrThrow<string>("TELEGRAM_KEY"),
+  useFactory: (config: ConfigService) => ({
+    telegramKey: config.getOrThrow<string>("TELEGRAM_KEY"),
+    menuSession: {
+      inMemory: {
+        defaultTtlMs: 10 * 60 * 1000,
+        maxEntries: 20_000,
+      },
+    },
+  }),
 });
+```
+
+### Telegraf base types from the package
+
+You can import common telegraf base types directly from `nest-teleforge`:
+
+```ts
+import type {
+  Context,
+  MiddlewareFn,
+  NarrowedContext,
+  Telegram,
+} from "nest-teleforge";
 ```
 
 ## Commands with `@TgCommand`
@@ -195,6 +229,96 @@ export class MenuHandlers {
 }
 ```
 
+### Typed menu context (`session` + `buttonData`)
+
+`MenuAction` supports generics: `MenuAction<TSession, TButtonData>`.
+
+```ts
+import type { Context } from "nest-teleforge";
+import {
+  DynamicButton,
+  MenuAction,
+  MenuActionCtx,
+  MenuActionResult,
+  MenuContext,
+} from "nest-teleforge";
+
+type ProductSession = { selected: number[] };
+type ProductPayload = { id: number; name: string };
+
+export class ProductHandlers {
+  async getProducts(
+    _ctx: Context,
+    _mctx: MenuContext<ProductSession>,
+  ): Promise<DynamicButton<ProductPayload>[]> {
+    return [
+      { label: "Widget A", data: { id: 1, name: "Widget A" } },
+      { label: "Widget B", data: { id: 2, name: "Widget B" } },
+    ];
+  }
+
+  @MenuAction<ProductSession, ProductPayload>("shop", "products", {
+    label: "Products",
+    dynamicButtons: ProductHandlers.prototype.getProducts,
+  })
+  async onProducts(
+    ctx: Context,
+    mctx: MenuActionCtx<ProductSession, ProductPayload>,
+  ): Promise<MenuActionResult> {
+    if (mctx.buttonData) {
+      mctx.session.data.selected.push(mctx.buttonData.id);
+      await ctx.answerCbQuery(`Picked ${mctx.buttonData.name}`);
+      return "rerender";
+    }
+
+    return "rerender";
+  }
+}
+```
+
+### Session data persistence during menu lifetime
+
+Pass initial session data in `menuService.start(..., { sessionData })`:
+
+```ts
+await this.menuService.start(ctx, {
+  flowId: "shop",
+  text: "Shop menu",
+  sessionData: { selected: [] as number[] },
+});
+```
+
+Inside `@MenuAction` handlers mutate `mctx.session.data` and return `"rerender"` to refresh menu state.
+
+### Session store configuration (TTL / custom backend)
+
+By default the module uses in-memory `InMemoryMenuSessionStore`.
+
+To tune TTL/capacity, pass `menuSession.inMemory` in module options:
+
+```ts
+TelegramModule.forRoot({
+  telegramKey: process.env.TELEGRAM_KEY!,
+  menuSession: {
+    inMemory: {
+      defaultTtlMs: 10 * 60 * 1000,
+      maxEntries: 20_000,
+    },
+  },
+});
+```
+
+For distributed deployments, pass your own `IMenuSessionStore` instance via `menuSession.store`:
+
+```ts
+TelegramModule.forRoot({
+  telegramKey: process.env.TELEGRAM_KEY!,
+  menuSession: {
+    store: new RedisMenuSessionStore(redisClient),
+  },
+});
+```
+
 Menu options:
 
 - `label`, `description`, `order`, `columns`
@@ -268,6 +392,9 @@ export class NotificationService {
 - `TelegramService` — bot instance access (`getBot`) and form API
 - `WaitManager` — low-level waiter primitive (`create`, `consume`, `cancel`)
 - `TELEGRAM_KEY` — injection token for bot key provider
+- `MENU_SESSION_STORE` — DI token for custom menu session store
+- `InMemoryMenuSessionStore` / `IMenuSessionStore` — default store and contract
+- Telegraf type re-exports: `Context`, `MiddlewareFn`, `NarrowedContext`, `Telegram`
 
 ## Debug update logs
 

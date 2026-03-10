@@ -1,3 +1,26 @@
+## Library module setup
+
+The package now supports menu-session initialization directly in module options.
+
+```ts
+TelegramModule.forRootAsync({
+  inject: [ConfigService],
+  useFactory: (config: ConfigService) => ({
+    telegramKey: config.getOrThrow("TELEGRAM_KEY"),
+    menuSession: {
+      inMemory: {
+        defaultTtlMs: 10 * 60 * 1000,
+        maxEntries: 20_000,
+      },
+    },
+  }),
+});
+```
+
+Backward compatibility is preserved: `TelegramModule.forRoot(process.env.TELEGRAM_KEY!)` still works.
+
+For full package docs see `libs/nest-teleforge/README.md`.
+
 ## Tests
 
 ### Unit tests

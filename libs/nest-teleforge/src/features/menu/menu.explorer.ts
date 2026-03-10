@@ -24,7 +24,7 @@ export class MenuExplorer implements OnModuleInit {
   private scanActionHandlers() {
     const providers = this.discovery.getProviders();
     const controllers = this.discovery.getControllers();
-    
+
     for (const w of [...providers, ...controllers]) {
       const instance = w.instance as any;
       if (!instance || typeof instance !== "object") continue;
@@ -41,10 +41,28 @@ export class MenuExplorer implements OnModuleInit {
             `@MenuAction('${metadata.flowId}', '${metadata.actionId}') -> ${instance.constructor.name}.${methodName}`,
           );
 
+          // Resolve dynamicButtons provider if specified
+          let dynamicProvider: any;
+          if (metadata.options?.dynamicButtons) {
+            const providerFn = metadata.options.dynamicButtons;
+            // Find the method on the same instance whose reference matches
+            const providerMethodName = Object.getOwnPropertyNames(proto).find(
+              (name) => proto[name] === providerFn,
+            );
+            if (providerMethodName) {
+              dynamicProvider = proto[providerMethodName].bind(instance);
+            } else {
+              this.logger.warn(
+                `dynamicButtons provider not found on ${instance.constructor.name} for @MenuAction('${metadata.flowId}', '${metadata.actionId}')`,
+              );
+            }
+          }
+
           this.menuService.registerAction({
             metadata,
             methodRef: method,
             handler: method.bind(instance),
+            dynamicProvider,
           });
         }
       });

@@ -3,6 +3,11 @@ import { DiscoveryModule } from "@nestjs/core";
 
 import { TelegramExplorer } from "./features/command/command.explorer";
 import { ListAnswerService } from "./features/list-answer/list-answer.service";
+import {
+  MENU_SESSION_STORE,
+  InMemoryMenuSessionStore,
+  IMenuSessionStore,
+} from "./features/menu/menu-session.store";
 import { MenuContextBuilder } from "./features/menu/menu.context.builder";
 import { MenuExplorer } from "./features/menu/menu.explorer";
 import { MenuService } from "./features/menu/menu.service";
@@ -10,14 +15,47 @@ import { TelegramService } from "./telegram.service";
 import { WaitManager } from "./wait-manager";
 import { TELEGRAM_KEY } from "./telegram.constant";
 
-function createTelegramProviders(telegramKeyProvider: Provider): Provider[] {
+const TELEGRAM_MODULE_OPTIONS = Symbol("TELEGRAM_MODULE_OPTIONS");
+
+function normalizeModuleOptions(
+  options: TelegramModuleFactoryResult,
+): TelegramModuleOptions {
+  return typeof options === "string" ? { telegramKey: options } : options;
+}
+
+function createMenuSessionStore(
+  options?: TelegramMenuSessionOptions,
+): IMenuSessionStore {
+  if (options?.store) {
+    return options.store;
+  }
+
+  return new InMemoryMenuSessionStore(options?.inMemory);
+}
+
+function createTelegramProviders(moduleOptionsProvider: Provider): Provider[] {
+  const telegramKeyProvider: Provider = {
+    provide: TELEGRAM_KEY,
+    inject: [TELEGRAM_MODULE_OPTIONS],
+    useFactory: (options: TelegramModuleOptions) => options.telegramKey,
+  };
+
+  const menuSessionStoreProvider: Provider = {
+    provide: MENU_SESSION_STORE,
+    inject: [TELEGRAM_MODULE_OPTIONS],
+    useFactory: (options: TelegramModuleOptions) =>
+      createMenuSessionStore(options.menuSession),
+  };
+
   return [
+    moduleOptionsProvider,
     telegramKeyProvider,
 
     WaitManager,
     TelegramService,
     TelegramExplorer,
 
+    menuSessionStoreProvider,
     MenuContextBuilder,
     MenuService,
     MenuExplorer,
@@ -27,35 +65,54 @@ function createTelegramProviders(telegramKeyProvider: Provider): Provider[] {
 
 @Module({})
 export class TelegramModule {
+  static forRoot(
+    telegramKeyOrOptions: string | TelegramModuleOptions,
+  ): DynamicModule {
+    return this.forRootAsync({
+      useFactory: () => normalizeModuleOptions(telegramKeyOrOptions),
+    });
+  }
+
   static forRootAsync(options: TelegramModuleAsyncOptions): DynamicModule {
-    const telegramKeyProvider: Provider = {
-      provide: TELEGRAM_KEY,
-      useFactory: options.useFactory,
+    const moduleOptionsProvider: Provider = {
+      provide: TELEGRAM_MODULE_OPTIONS,
+      useFactory: async (...args: any[]) => {
+        const result = await options.useFactory(...args);
+        return normalizeModuleOptions(result);
+      },
       inject: options.inject ?? [],
     };
 
     return {
       module: TelegramModule,
       imports: [DiscoveryModule, ...(options.imports ?? [])],
-      providers: createTelegramProviders(telegramKeyProvider),
-      exports: [
-        TelegramService,
-        WaitManager,
-        ListAnswerService,
-        MenuService,
-      ],
+      providers: createTelegramProviders(moduleOptionsProvider),
+      exports: [TelegramService, WaitManager, ListAnswerService, MenuService],
     };
   }
-
-  static forRoot(telegramKey: string): DynamicModule {
-    return this.forRootAsync({
-      useFactory: () => telegramKey,
-    });
-  }
 }
+
+export interface TelegramInMemorySessionOptions {
+  defaultTtlMs?: number;
+  maxEntries?: number;
+}
+
+export interface TelegramMenuSessionOptions {
+  inMemory?: TelegramInMemorySessionOptions;
+  store?: IMenuSessionStore;
+}
+
+export interface TelegramModuleOptions {
+  telegramKey: string;
+  menuSession?: TelegramMenuSessionOptions;
+}
+
+type TelegramModuleFactoryResult = string | TelegramModuleOptions;
 
 export interface TelegramModuleAsyncOptions {
   imports?: any[];
   inject?: any[];
-  useFactory: (...args: any[]) => Promise<string> | string;
+  useFactory: (
+    ...args: any[]
+  ) => Promise<TelegramModuleFactoryResult> | TelegramModuleFactoryResult;
 }
