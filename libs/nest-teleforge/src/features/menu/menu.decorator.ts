@@ -65,6 +65,11 @@ export type MenuActionCtx<
   buttonData?: TButtonData;
 };
 
+export type MenuActionContext<
+  TSession = any,
+  TButtonData = any,
+> = MenuActionCtx<TSession, TButtonData>;
+
 export type MenuDynamicButtonsProvider<TSession = any, TButtonData = any> = (
   ctx: any,
   mctx: MenuContext<TSession>,
@@ -77,12 +82,14 @@ export type MenuActionOptions<TSession = any, TButtonData = any> = {
   description?: string;
   order?: number;
   parentFunction?: Function;
+  parentActionId?: string;
   guard?: MenuPredicate | MenuPredicate[];
   disabled?: MenuPredicate | MenuPredicate[];
   disabledText?: string;
   hidden?: boolean;
   columns?: number;
   back?: boolean;
+  dynamicButtonsProvider?: string;
 
   /**
    * Reference to a method on the same class that provides dynamic buttons.

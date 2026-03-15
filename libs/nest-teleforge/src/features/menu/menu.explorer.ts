@@ -43,7 +43,17 @@ export class MenuExplorer implements OnModuleInit {
 
           // Resolve dynamicButtons provider if specified
           let dynamicProvider: any;
-          if (metadata.options?.dynamicButtons) {
+          if (metadata.options?.dynamicButtonsProvider) {
+            const providerMethodName = metadata.options.dynamicButtonsProvider;
+            const providerMethod = proto[providerMethodName];
+            if (typeof providerMethod === "function") {
+              dynamicProvider = providerMethod.bind(instance);
+            } else {
+              this.logger.warn(
+                `dynamicButtonsProvider '${providerMethodName}' not found on ${instance.constructor.name} for @MenuAction('${metadata.flowId}', '${metadata.actionId}')`,
+              );
+            }
+          } else if (metadata.options?.dynamicButtons) {
             const providerFn = metadata.options.dynamicButtons;
             // Find the method on the same instance whose reference matches
             const providerMethodName = Object.getOwnPropertyNames(proto).find(

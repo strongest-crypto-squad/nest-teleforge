@@ -6,8 +6,8 @@ NestJS toolkit for Telegram bots on top of Telegraf.
 
 - `@TgCommand()` command handlers discovered automatically
 - `telegramService.form()` typed conversational forms with validation
-- `@MenuAction()` + `menuService.start()` inline keyboard menus with nested navigation
-- Typed menu context via `MenuAction<SessionData, ButtonPayload>` and `MenuActionCtx`
+- `@MenuAction()` + `menuService.start()/startWithSender()/startByChat()` inline keyboard menus with nested navigation
+- Typed menu context via `MenuAction<SessionData, ButtonPayload>`, `MenuActionCtx`, and `MenuActionContext`
 - Per-menu mutable session data with pluggable store (`MENU_SESSION_STORE`)
 - `listAnswerService.ask()` selectable lists with pagination, predicates, cancel and timeout
 - Low-level `WaitManager` for custom waiting flows
@@ -75,11 +75,22 @@ You can import common telegraf base types directly from `nest-teleforge`:
 
 ```ts
 import type {
+  CallbackQueryContext,
   Context,
   MiddlewareFn,
   NarrowedContext,
   Telegram,
 } from "nest-teleforge";
+```
+
+For callback handlers you can use a strict callback-only context:
+
+```ts
+import type { CallbackQueryContext } from "nest-teleforge";
+
+async function onCallback(ctx: CallbackQueryContext) {
+  await ctx.answerCbQuery("OK");
+}
 ```
 
 ## Commands with `@TgCommand`
@@ -177,7 +188,7 @@ export class ListCommands {
         getKey: (item) => item.key,
         message: "Choose an option:",
         timeoutMs: 30_000,
-        cancel: { label: "Cancel", value: "cancel" },
+        cancel: { label: "Cancel" },
         predicate: (item) => item.enabled,
       },
     );
@@ -196,6 +207,9 @@ export class ListCommands {
   }
 }
 ```
+
+`ListAnswerService` now namespaces callback data per ask-call (nonce-based),
+so stale buttons and parallel lists in the same chat do not collide.
 
 ## Menus with `@MenuAction` and `MenuService`
 
@@ -229,7 +243,7 @@ export class MenuHandlers {
   }
 
   @MenuAction("main", "edit-name", {
-    parentFunction: MenuHandlers.prototype.profile,
+    parentActionId: "profile",
     label: "✏️ Edit name",
   })
   async editName(ctx: Context) {
@@ -237,6 +251,37 @@ export class MenuHandlers {
     return "handled" as const;
   }
 }
+```
+
+### Start menu without Telegraf `Context`
+
+For service/background flows you can start menus by chat id directly.
+
+```ts
+await this.menuService.startByChat(
+  chatId,
+  {
+    flowId: "deploy",
+    text: "Deployment menu",
+    sessionData: { target: "prod" },
+  },
+  this.telegramService.getBot().telegram,
+);
+```
+
+Or with your own sender abstraction:
+
+```ts
+await this.menuService.startWithSender(
+  chatId,
+  {
+    send: (text, extra) => telegram.sendMessage(chatId, text, extra),
+  },
+  {
+    flowId: "deploy",
+    text: "Deployment menu",
+  },
+);
 ```
 
 ### Typed menu context (`session` + `buttonData`)
@@ -249,6 +294,7 @@ import {
   DynamicButton,
   MenuAction,
   MenuActionCtx,
+  MenuActionContext,
   MenuActionResult,
   MenuContext,
 } from "nest-teleforge";
@@ -269,11 +315,11 @@ export class ProductHandlers {
 
   @MenuAction<ProductSession, ProductPayload>("shop", "products", {
     label: "Products",
-    dynamicButtons: ProductHandlers.prototype.getProducts,
+    dynamicButtonsProvider: "getProducts",
   })
   async onProducts(
     ctx: Context,
-    mctx: MenuActionCtx<ProductSession, ProductPayload>,
+    mctx: MenuActionContext<ProductSession, ProductPayload>,
   ): Promise<MenuActionResult> {
     if (mctx.buttonData) {
       mctx.session.data.selected.push(mctx.buttonData.id);
@@ -334,7 +380,10 @@ Menu options:
 - `label`, `description`, `order`, `columns`
 - `guard` (hide action if predicate fails)
 - `disabled` + `disabledText` (show action as unavailable)
-- `parentFunction` for nested menus
+- `parentActionId` (stable nested links by action id)
+- `parentFunction` (legacy / advanced nested links)
+- `dynamicButtonsProvider` (provider method name on same class)
+- `dynamicButtons` (legacy function-reference provider)
 - `back` to control default back button behavior
 - `hidden` to exclude action from rendering
 
@@ -348,6 +397,10 @@ Nested flow support:
 
 - `menuService.start(..., { mode: "push" })` starts child flow on top of current flow
 - `menuService.closeCurrent(ctx, { renderPrevious: true })` closes current flow and re-renders previous one
+
+Runtime note:
+
+- Dynamic button payloads are stored internally by menu session and no longer injected into `session.data`.
 
 ### Isolated / Service-initiated (Rootless) menus
 
@@ -400,11 +453,32 @@ export class NotificationService {
 ## Low-level exports
 
 - `TelegramService` — bot instance access (`getBot`) and form API
-- `WaitManager` — low-level waiter primitive (`create`, `consume`, `cancel`)
+- `WaitManager` — low-level waiter primitive (`create`, `consume`, `cancel`) with optional `scope` + `matcher` for parallel flows
 - `TELEGRAM_KEY` — injection token for bot key provider
+- `TELEGRAM_CLIENT_OPTIONS` — injection token for telegraf API client options
 - `MENU_SESSION_STORE` — DI token for custom menu session store
 - `InMemoryMenuSessionStore` / `IMenuSessionStore` — default store and contract
-- Telegraf type re-exports: `Context`, `MiddlewareFn`, `NarrowedContext`, `Telegram`
+- Telegraf type re-exports: `Context`, `MiddlewareFn`, `NarrowedContext`, `Telegram`, `CallbackQueryContext`
+- Menu context aliases: `MenuActionCtx`, `MenuActionContext`, `MenuContext`
+
+### WaitManager for parallel flows
+
+`WaitManager` supports scoped and matcher-based waiters, so multiple flows in one chat can wait in parallel:
+
+```ts
+const confirmPromise = waitManager.create(chatId, 30_000, undefined, {
+  scope: "deploy-confirm",
+  matcher: (text) => text.startsWith("confirm:"),
+});
+
+const listPromise = waitManager.create(chatId, 30_000, undefined, {
+  scope: "list-select",
+  matcher: (text) => text.startsWith("la:"),
+});
+
+// consume by scope or by matcher
+waitManager.consume(chatId, "confirm:yes", "deploy-confirm");
+```
 
 ## Debug update logs
 

@@ -63,11 +63,32 @@ type CallbackPayload = {
   token: string;
 };
 
+export type MenuStartOptions = {
+  flowId: string;
+  text: string;
+  columns?: number;
+  parentFunction?: Function;
+  mode?: "replace" | "push";
+  reuseCurrentMessage?: boolean;
+  sessionData?: any;
+};
+
+export type MenuMessageSender = {
+  send: (text: string, extra: any) => Promise<any>;
+  edit?: (text: string, extra: any) => Promise<any>;
+  answerCbQuery?: (text?: string) => Promise<any>;
+  from?: {
+    id?: number;
+    username?: string;
+  };
+};
+
 @Injectable()
 export class MenuService {
   private readonly actionsByKey = new Map<string, RegisteredMenuAction>();
   private readonly actionsByFlow = new Map<string, RegisteredMenuAction[]>();
   private readonly statesByChat = new Map<number, MenuState[]>();
+  private readonly dynamicDataBySession = new Map<string, Map<string, any>>();
   private readonly callbackPrefix = "m3:";
 
   constructor(
@@ -113,19 +134,7 @@ export class MenuService {
 
   // ── Lifecycle ────────────────────────────────────────────────
 
-  async start(
-    ctx: Context,
-    opts: {
-      flowId: string;
-      text: string;
-      columns?: number;
-      parentFunction?: Function;
-      mode?: "replace" | "push";
-      reuseCurrentMessage?: boolean;
-      /** Initial session data. Defaults to `{}`. */
-      sessionData?: any;
-    },
-  ) {
+  async start(ctx: Context, opts: MenuStartOptions) {
     const chatId = ctx.chat?.id;
     if (chatId == null) return;
 
@@ -150,6 +159,7 @@ export class MenuService {
     if (mode === "replace") {
       for (const prev of existing) {
         this.sessionStore.delete(prev.sessionId);
+        this.dynamicDataBySession.delete(prev.sessionId);
       }
     }
     const nextStates = mode === "push" ? [...existing, state] : [state];
@@ -160,6 +170,43 @@ export class MenuService {
       preferEdit && this.canEditCurrentMessage(ctx) ? "edit" : "send";
 
     await this.render(ctx, state, renderMode);
+  }
+
+  async startWithSender(
+    chatId: number,
+    sender: MenuMessageSender,
+    opts: MenuStartOptions,
+  ) {
+    const syntheticCtx = this.createSyntheticContext(chatId, sender);
+    await this.start(syntheticCtx, opts);
+  }
+
+  async startByChat(
+    chatId: number,
+    opts: MenuStartOptions,
+    telegram: {
+      sendMessage: (chatId: number, text: string, extra: any) => Promise<any>;
+      editMessageText?: (
+        chatId: number,
+        messageId: number,
+        inlineMessageId: string | undefined,
+        text: string,
+        extra?: any,
+      ) => Promise<any>;
+    },
+    from?: {
+      id?: number;
+      username?: string;
+    },
+  ) {
+    await this.startWithSender(
+      chatId,
+      {
+        send: (text, extra) => telegram.sendMessage(chatId, text, extra),
+        from,
+      },
+      opts,
+    );
   }
 
   async closeCurrent(
@@ -176,6 +223,7 @@ export class MenuService {
 
     const removed = states.pop()!;
     this.sessionStore.delete(removed.sessionId);
+    this.dynamicDataBySession.delete(removed.sessionId);
 
     if (states.length === 0) {
       this.statesByChat.delete(chatId);
@@ -323,9 +371,8 @@ export class MenuService {
       return true;
     }
 
-    const btnStore: Record<string, any> =
-      (session.data as any)?.__dynamicButtons ?? {};
-    const buttonData = btnStore[dataKey];
+    const btnStore = this.dynamicDataBySession.get(state.sessionId);
+    const buttonData = btnStore?.get(dataKey);
     if (buttonData === undefined) {
       await this.safeAnswerCbQuery(ctx, "Button data expired");
       return true;
@@ -391,9 +438,8 @@ export class MenuService {
   private clearDynamic(state: MenuState, session?: MenuSession) {
     state.dynamicEntries = undefined;
     state.dynamicActionKey = undefined;
-
-    if (session && session.data && typeof session.data === "object") {
-      delete (session.data as Record<string, unknown>).__dynamicButtons;
+    if (session) {
+      this.dynamicDataBySession.delete(session.id);
     }
   }
 
@@ -409,11 +455,18 @@ export class MenuService {
 
   private getChildren(
     flowId: string,
-    parentFunction: Function | undefined,
+    parentAction: RegisteredMenuAction | undefined,
+    rootParentFunction: Function | undefined,
   ): RegisteredMenuAction[] {
     return (this.actionsByFlow.get(flowId) ?? [])
       .filter((action) => {
         if (action.options.hidden) return false;
+
+        if (action.options.parentActionId) {
+          return parentAction?.actionId === action.options.parentActionId;
+        }
+
+        const parentFunction = parentAction?.methodRef ?? rootParentFunction;
         return action.options.parentFunction === parentFunction;
       })
       .sort((a, b) => {
@@ -428,7 +481,6 @@ export class MenuService {
 
   private async render(ctx: Context, state: MenuState, mode: "send" | "edit") {
     const current = this.getCurrentAction(state);
-    const parentFunction = current?.methodRef ?? state.rootParentFunction;
 
     const session = this.sessionStore.get(state.sessionId);
     const mctx = this.builder.buildWithSession(
@@ -437,7 +489,11 @@ export class MenuService {
     );
 
     const visibleChildren: RegisteredMenuAction[] = [];
-    for (const child of this.getChildren(state.flowId, parentFunction)) {
+    for (const child of this.getChildren(
+      state.flowId,
+      current,
+      state.rootParentFunction,
+    )) {
       const allowed = await this.evalPred(child.options.guard, mctx);
       if (allowed) visibleChildren.push(child);
     }
@@ -480,13 +536,13 @@ export class MenuService {
       try {
         const dynButtons = await current.dynamicProvider(ctx, mctx);
         if (dynButtons?.length) {
-          const btnStore: Record<string, any> = {};
+          const btnStore = new Map<string, any>();
           const entries: DynamicEntry[] = [];
 
           for (const btn of dynButtons) {
             if (btn.hidden) continue;
             const dataKey = (tokenIndex++).toString(36);
-            btnStore[dataKey] = btn.data;
+            btnStore.set(dataKey, btn.data);
             entries.push({
               label: btn.label,
               dataKey,
@@ -506,12 +562,8 @@ export class MenuService {
               (orderMap.get(a.label) ?? 0) - (orderMap.get(b.label) ?? 0),
           );
 
-          // Persist in session
           if (session) {
-            session.data = {
-              ...(session.data as any),
-              __dynamicButtons: btnStore,
-            };
+            this.dynamicDataBySession.set(session.id, btnStore);
           }
 
           state.dynamicEntries = entries;
@@ -674,5 +726,25 @@ export class MenuService {
     const callbackMessageId = (ctx.update as any)?.callback_query?.message
       ?.message_id;
     return typeof callbackMessageId === "number";
+  }
+
+  private createSyntheticContext(
+    chatId: number,
+    sender: MenuMessageSender,
+  ): Context {
+    return {
+      chat: { id: chatId },
+      from: sender.from,
+      update: {},
+      reply: (text: string, extra: any) => sender.send(text, extra),
+      editMessageText: async (text: string, extra: any) => {
+        if (sender.edit) {
+          return sender.edit(text, extra);
+        }
+
+        return sender.send(text, extra);
+      },
+      answerCbQuery: async (text?: string) => sender.answerCbQuery?.(text),
+    } as unknown as Context;
   }
 }

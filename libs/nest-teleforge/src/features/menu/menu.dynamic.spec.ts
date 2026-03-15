@@ -513,4 +513,77 @@ describe("MenuService dynamic buttons (session-based)", () => {
     await svc.handleCallback(cbCtx3, runWithChat);
     expect(mainHits).toBe(1);
   });
+
+  it("supports parentActionId-based child linking", async () => {
+    svc.registerAction({
+      metadata: {
+        flowId: "test",
+        actionId: "rootA",
+        key: "test.rootA",
+        options: { label: "Root A" },
+      },
+      methodRef: function rootA() {},
+      handler: async () => "rerender",
+    });
+
+    svc.registerAction({
+      metadata: {
+        flowId: "test",
+        actionId: "childA",
+        key: "test.childA",
+        options: { label: "Child A", parentActionId: "rootA" },
+      },
+      methodRef: function childA() {},
+      handler: async () => "handled",
+    });
+
+    const { ctx } = makeCtx();
+    await svc.start(ctx, { flowId: "test", text: "Root menu" });
+
+    const rootReply = (ctx.reply as jest.Mock).mock.calls[0];
+    const rootABtn = rootReply[1].reply_markup.inline_keyboard
+      .flat()
+      .find((b: any) => b.text === "Root A");
+    expect(rootABtn).toBeDefined();
+
+    const { ctx: cbCtx1, edited } = makeCtx(1, rootABtn.callback_data);
+    await svc.handleCallback(cbCtx1, runWithChat);
+
+    const labels = edited[0].reply_markup.inline_keyboard
+      .flat()
+      .map((b: any) => b.text);
+    expect(labels).toContain("Child A");
+  });
+
+  it("can start menu with sender without Telegraf Context", async () => {
+    svc.registerAction({
+      metadata: {
+        flowId: "test",
+        actionId: "x",
+        key: "test.x",
+        options: { label: "X" },
+      },
+      methodRef: function x() {},
+      handler: async () => "handled",
+    });
+
+    const sent: any[] = [];
+    await svc.startWithSender(
+      777,
+      {
+        send: async (text, extra) => {
+          sent.push({ text, extra });
+          return { message_id: 1 };
+        },
+      },
+      { flowId: "test", text: "Hello menu" },
+    );
+
+    expect(sent).toHaveLength(1);
+    expect(sent[0].text).toBe("Hello menu");
+    const labels = sent[0].extra.reply_markup.inline_keyboard
+      .flat()
+      .map((b: any) => b.text);
+    expect(labels).toContain("X");
+  });
 });
