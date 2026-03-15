@@ -1,5 +1,6 @@
 import { Module, DynamicModule, Provider } from "@nestjs/common";
 import { DiscoveryModule } from "@nestjs/core";
+import type { Context, Telegraf } from "telegraf";
 
 import { TelegramExplorer } from "./features/command/command.explorer";
 import { ListAnswerService } from "./features/list-answer/list-answer.service";
@@ -13,7 +14,7 @@ import { MenuExplorer } from "./features/menu/menu.explorer";
 import { MenuService } from "./features/menu/menu.service";
 import { TelegramService } from "./telegram.service";
 import { WaitManager } from "./wait-manager";
-import { TELEGRAM_KEY } from "./telegram.constant";
+import { TELEGRAM_CLIENT_OPTIONS, TELEGRAM_KEY } from "./telegram.constant";
 
 const TELEGRAM_MODULE_OPTIONS = Symbol("TELEGRAM_MODULE_OPTIONS");
 
@@ -34,6 +35,12 @@ function createMenuSessionStore(
 }
 
 function createTelegramProviders(moduleOptionsProvider: Provider): Provider[] {
+  const telegramClientOptionsProvider: Provider = {
+    provide: TELEGRAM_CLIENT_OPTIONS,
+    inject: [TELEGRAM_MODULE_OPTIONS],
+    useFactory: (options: TelegramModuleOptions) => options.telegram,
+  };
+
   const telegramKeyProvider: Provider = {
     provide: TELEGRAM_KEY,
     inject: [TELEGRAM_MODULE_OPTIONS],
@@ -49,6 +56,7 @@ function createTelegramProviders(moduleOptionsProvider: Provider): Provider[] {
 
   return [
     moduleOptionsProvider,
+    telegramClientOptionsProvider,
     telegramKeyProvider,
 
     WaitManager,
@@ -104,8 +112,13 @@ export interface TelegramMenuSessionOptions {
 
 export interface TelegramModuleOptions {
   telegramKey: string;
+  telegram?: TelegramApiClientOptions;
   menuSession?: TelegramMenuSessionOptions;
 }
+
+export type TelegramApiClientOptions = NonNullable<
+  Partial<Telegraf.Options<Context>>["telegram"]
+>;
 
 type TelegramModuleFactoryResult = string | TelegramModuleOptions;
 

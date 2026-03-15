@@ -6,7 +6,8 @@ import { appendFile, mkdir } from "fs/promises";
 import { dirname } from "path";
 import { TgFormContext, tgForm } from "./features/form/tgForm";
 import { WaitManager } from "./wait-manager";
-import { TELEGRAM_KEY } from "./telegram.constant";
+import { TELEGRAM_CLIENT_OPTIONS, TELEGRAM_KEY } from "./telegram.constant";
+import type { TelegramApiClientOptions } from "./telegram.module";
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
@@ -22,14 +23,16 @@ export class TelegramService implements OnModuleInit {
   constructor(
     @Inject(TELEGRAM_KEY)
     private readonly telegramKey: string,
+    @Inject(TELEGRAM_CLIENT_OPTIONS)
+    private readonly telegramClientOptions:
+      | TelegramApiClientOptions
+      | undefined,
     private readonly wait: WaitManager,
   ) {}
 
   async onModuleInit() {
     this.bot = new Telegraf(this.telegramKey, {
-      telegram: {
-        
-      }
+      telegram: this.telegramClientOptions,
     });
 
     if (this.debugUpdatesEnabled) {
@@ -60,9 +63,14 @@ export class TelegramService implements OnModuleInit {
         if (this.debugUpdatesToFile) {
           try {
             await mkdir(dirname(this.updatesLogFilePath), { recursive: true });
-            await appendFile(this.updatesLogFilePath, `${new Date().toISOString()} ${line}\n`);
+            await appendFile(
+              this.updatesLogFilePath,
+              `${new Date().toISOString()} ${line}\n`,
+            );
           } catch (err) {
-            this.logger.warn(`Failed to write Telegram update log file: ${err}`);
+            this.logger.warn(
+              `Failed to write Telegram update log file: ${err}`,
+            );
           }
         }
 
@@ -119,7 +127,10 @@ export class TelegramService implements OnModuleInit {
     try {
       await this.bot.telegram.deleteWebhook({ drop_pending_updates: true });
     } catch (e: any) {
-      this.logger.error(`Failed to delete webhook (is the bot token valid?): ${e.message}`, e.stack);
+      this.logger.error(
+        `Failed to delete webhook (is the bot token valid?): ${e.message}`,
+        e.stack,
+      );
       throw e;
     }
     this.bot.launch();

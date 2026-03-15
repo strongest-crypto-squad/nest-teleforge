@@ -28,6 +28,10 @@ import { TelegramModule } from "nest-teleforge";
   imports: [
     TelegramModule.forRoot({
       telegramKey: process.env.TELEGRAM_KEY!,
+      telegram: {
+        // Telegraf ApiClient options (e.g. proxy via custom agent)
+        // agent: new HttpsProxyAgent(process.env.HTTPS_PROXY!),
+      },
       menuSession: {
         inMemory: {
           defaultTtlMs: 10 * 60 * 1000,
@@ -49,6 +53,9 @@ TelegramModule.forRootAsync({
   inject: [ConfigService],
   useFactory: (config: ConfigService) => ({
     telegramKey: config.getOrThrow<string>("TELEGRAM_KEY"),
+    telegram: {
+      // agent: new HttpsProxyAgent(config.getOrThrow<string>("HTTPS_PROXY")),
+    },
     menuSession: {
       inMemory: {
         defaultTtlMs: 10 * 60 * 1000,
@@ -58,6 +65,9 @@ TelegramModule.forRootAsync({
   }),
 });
 ```
+
+`telegram` is passed directly to Telegraf `new Telegraf(token, { telegram })`,
+so you can configure low-level API client options such as custom `agent` for proxy.
 
 ### Telegraf base types from the package
 
