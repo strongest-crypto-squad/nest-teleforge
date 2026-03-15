@@ -1,6 +1,6 @@
 {
   "name": "nest-teleforge",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "NestJS Telegram bot toolkit with command/form/menu flows",
   "license": "ISC",
   "repository": {
