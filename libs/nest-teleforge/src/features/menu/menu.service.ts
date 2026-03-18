@@ -684,11 +684,10 @@ export class MenuService {
     return true;
   }
 
-  // ── Callback packing (m3:<flowId>:<sessionShort>:<token>) ───
+  // ── Callback packing (m3:<flowId>:<sessionId>:<token>) ───
 
   private packCallback(payload: CallbackPayload): string {
-    const shortSession = payload.sessionId.replace(/-/g, "").slice(0, 8);
-    return `${this.callbackPrefix}${payload.flowId}:${shortSession}:${payload.token}`;
+    return `${this.callbackPrefix}${payload.flowId}:${payload.sessionId}:${payload.token}`;
   }
 
   private parseCallback(data: string): CallbackPayload | null {
@@ -698,28 +697,46 @@ export class MenuService {
       if (parts.length < 3) return null;
 
       const flowId = parts[0];
-      const sessionShort = parts[1];
+      const sessionId = parts[1];
       const token = parts.slice(2).join(":");
 
-      if (!flowId || !sessionShort || !token) return null;
+      if (!flowId || !sessionId || !token) return null;
 
-      return { flowId, sessionId: sessionShort, token };
+      return { flowId, sessionId, token };
     } catch {
       return null;
     }
   }
 
-  /** Match a state by short session prefix. */
+  private normalizeSessionId(sessionId: string): string {
+    return sessionId.replace(/-/g, "").toLowerCase();
+  }
+
+  /** Match a state by full session id, with safe legacy fallback for short ids. */
   private findStateBySession(
     states: MenuState[],
     flowId: string,
-    sessionShort: string,
+    sessionId: string,
   ): MenuState | undefined {
-    return states.find(
+    const normalizedTarget = this.normalizeSessionId(sessionId);
+
+    const exactMatch = states.find(
       (s) =>
         s.flowId === flowId &&
-        s.sessionId.replace(/-/g, "").startsWith(sessionShort),
+        this.normalizeSessionId(s.sessionId) === normalizedTarget,
     );
+    if (exactMatch) return exactMatch;
+
+    const isLegacyShortId = normalizedTarget.length === 8;
+    if (!isLegacyShortId) return undefined;
+
+    const legacyMatches = states.filter(
+      (s) =>
+        s.flowId === flowId &&
+        this.normalizeSessionId(s.sessionId).startsWith(normalizedTarget),
+    );
+
+    return legacyMatches.length === 1 ? legacyMatches[0] : undefined;
   }
 
   private canEditCurrentMessage(ctx: Context): boolean {

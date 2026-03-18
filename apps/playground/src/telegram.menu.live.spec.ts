@@ -112,4 +112,74 @@ describe("Telegram menu live integration", () => {
 
     expect(backText).toContain("General account settings.");
   });
+
+  it("handles mode:push for 3 concurrent profile submenus and preserves context", async () => {
+    const startMs = Date.now();
+
+    await sendLiveMessage({ env, text: "/menu" });
+    await waitForTargetReplyInChat({
+      env,
+      targetBotUsername,
+      expectedTextPart: "Choose a section below.",
+      sinceMs: startMs,
+    });
+
+    await clickInlineButtonByText({ env, buttonText: "🏠 Home" });
+    await waitForTargetReplyInChat({
+      env,
+      targetBotUsername,
+      expectedTextPart: "Home screen.",
+      sinceMs: startMs,
+    });
+
+    await clickInlineButtonByText({ env, buttonText: "👤 Profile" });
+    await waitForTargetReplyInChat({
+      env,
+      targetBotUsername,
+      expectedTextPart: "Your profile data and settings.",
+      sinceMs: startMs,
+    });
+
+    for (let i = 0; i < 3; i += 1) {
+      const openPushMs = Date.now();
+      await clickInlineButtonByText({
+        env,
+        buttonText: "View profile",
+        messageTextPart: "Your profile data and settings.",
+        matchIndexFromNewest: 0,
+      });
+
+      await waitForTargetReplyInChat({
+        env,
+        targetBotUsername,
+        expectedTextPart: "Profile: choose an action",
+        sinceMs: openPushMs,
+      });
+    }
+
+    for (let i = 0; i < 3; i += 1) {
+      await clickInlineButtonByText({
+        env,
+        buttonText: "⬅️ Back to main menu",
+        messageTextPart: "Profile: choose an action",
+        matchIndexFromNewest: 0,
+      });
+    }
+
+    const reopenMs = Date.now();
+    await clickInlineButtonByText({
+      env,
+      buttonText: "View profile",
+      messageTextPart: "Your profile data and settings.",
+      matchIndexFromNewest: 0,
+    });
+
+    const reopenedText = await waitForTargetReplyInChat({
+      env,
+      targetBotUsername,
+      expectedTextPart: "Profile: choose an action",
+      sinceMs: reopenMs,
+    });
+    expect(reopenedText).toContain("Profile: choose an action");
+  });
 });

@@ -1,6 +1,9 @@
 import { MenuService } from "./menu.service";
 import { MenuContextBuilder } from "./menu.context.builder";
-import { InMemoryMenuSessionStore } from "./menu-session.store";
+import {
+  InMemoryMenuSessionStore,
+  IMenuSessionStore,
+} from "./menu-session.store";
 import type { DynamicButton, MenuContext } from "./menu.decorator";
 
 /* ─── Helpers ──────────────────────────────────────────────────── */
@@ -512,6 +515,99 @@ describe("MenuService dynamic buttons (session-based)", () => {
     const { ctx: cbCtx3 } = makeCtx(1, mainPingBtn.callback_data);
     await svc.handleCallback(cbCtx3, runWithChat);
     expect(mainHits).toBe(1);
+  });
+
+  it("routes callbacks to the correct pushed state when session short ids collide", async () => {
+    const sessionIds = [
+      "aaaaaaaa-1111-1111-1111-111111111111",
+      "aaaaaaaa-2222-2222-2222-222222222222",
+    ];
+    const sessions = new Map<string, any>();
+
+    const deterministicStore = {
+      create: (flowId: string, initialData: any) => {
+        const id = sessionIds.shift() ?? "aaaaaaaa-ffff-ffff-ffff-ffffffffffff";
+        const session = { id, flowId, data: initialData };
+        sessions.set(id, session);
+        return session;
+      },
+      get: (id: string) => sessions.get(id),
+      delete: (id: string) => {
+        sessions.delete(id);
+      },
+    } as IMenuSessionStore;
+
+    svc = new MenuService(new MenuContextBuilder(), deterministicStore);
+
+    let topHits = 0;
+    const mainRoot = () => {};
+    const pushedRoot = () => {};
+
+    svc.registerAction({
+      metadata: {
+        flowId: "main",
+        actionId: "open-pushed",
+        key: "main.open-pushed",
+        options: { label: "Open pushed", parentFunction: mainRoot },
+      },
+      methodRef: mainRoot,
+      handler: async (ctx: any) => {
+        await svc.start(ctx, {
+          flowId: "main",
+          text: "Pushed main",
+          mode: "push",
+          parentFunction: pushedRoot,
+          columns: 1,
+        });
+        return "handled";
+      },
+    });
+
+    svc.registerAction({
+      metadata: {
+        flowId: "main",
+        actionId: "top-ping",
+        key: "main.top-ping",
+        options: { label: "Top ping", parentFunction: pushedRoot },
+      },
+      methodRef: pushedRoot,
+      handler: async () => {
+        topHits += 1;
+        return "handled";
+      },
+    });
+
+    const { ctx } = makeCtx();
+    await svc.start(ctx, {
+      flowId: "main",
+      text: "Main root",
+      parentFunction: mainRoot,
+      columns: 1,
+    });
+
+    const rootKb = (ctx.reply as jest.Mock).mock.calls[0][1].reply_markup
+      .inline_keyboard;
+    const openPushedBtn = rootKb
+      .flat()
+      .find((b: any) => b.text === "Open pushed");
+    expect(openPushedBtn).toBeDefined();
+
+    const { ctx: cbCtx1 } = makeCtx(1, openPushedBtn.callback_data);
+    await svc.handleCallback(cbCtx1, runWithChat);
+
+    const pushedRender =
+      (cbCtx1.editMessageText as jest.Mock).mock.calls[0] ??
+      (cbCtx1.reply as jest.Mock).mock.calls[0];
+    const topPingBtn = pushedRender[1].reply_markup.inline_keyboard
+      .flat()
+      .find((b: any) => b.text === "Top ping");
+    expect(topPingBtn).toBeDefined();
+
+    const { ctx: cbCtx2, answered } = makeCtx(1, topPingBtn.callback_data);
+    await svc.handleCallback(cbCtx2, runWithChat);
+
+    expect(topHits).toBe(1);
+    expect(answered).not.toContain("Button is outdated");
   });
 
   it("supports parentActionId-based child linking", async () => {

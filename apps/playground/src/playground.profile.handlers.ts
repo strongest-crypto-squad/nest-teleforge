@@ -43,6 +43,7 @@ export class PlaygroundProfileHandlers {
       flowId: "profile",
       text: "Profile: choose an action",
       mode: "push",
+      reuseCurrentMessage: false,
       columns: 1,
     });
     return "handled";
