@@ -1,7 +1,8 @@
 {
   "name": "nest-teleforge",
-  "version": "0.2.1",
-  "description": "NestJS Telegram bot toolkit with command/form/menu flows",
+  "version": "0.2.2",
+  "description": "NestJS toolkit for building Telegram bots with Telegraf: commands, typed conversational forms, inline menus, and session-driven flows",
+  "author": "strongest-crypto-squad (https://github.com/strongest-crypto-squad)",
   "license": "ISC",
   "repository": {
     "type": "git",
@@ -14,6 +15,9 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=20"
+  },
   "files": [
     "dist",
     "README.md"
@@ -28,11 +32,21 @@
   },
   "keywords": [
     "nestjs",
+    "nestjs-module",
     "telegram",
+    "telegram-bot",
+    "telegram-bot-api",
     "telegraf",
-    "bot",
-    "menu",
-    "form"
+    "typescript",
+    "chatbot",
+    "bot-commands",
+    "conversational-form",
+    "class-validator",
+    "inline-keyboard",
+    "menu-navigation",
+    "callback-query",
+    "session-store",
+    "wait-manager"
   ],
   "peerDependenciesMeta": {
     "@nestjs/core": {
