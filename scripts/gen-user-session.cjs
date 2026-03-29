@@ -32,7 +32,7 @@ async function main() {
 
     if (useSmsMode) {
       await client.start({
-        phoneNumber: async () => (await prompt.ask('Phone number (e.g. +7999...): ')).trim(),
+        phoneNumber: async () => (await prompt.ask('Phone number (e.g. +12025550123): ')).trim(),
         phoneCode: async () => (await prompt.ask('Telegram code: ')).trim(),
         password: async () => (await prompt.ask('2FA password (if any): ')).trim(),
         onError: (err) => {
